@@ -42,8 +42,7 @@ jobs:
       - name: Copy games to dist
         run: |
           mkdir -p dist/games
-          cp games/*.tzx dist/games/
-          cp games/*.tap dist/games/
+          cp games/* dist/games/
       
       - name: Setup Pages
         uses: actions/configure-pages@v4
