@@ -60,7 +60,11 @@ export class AudioHandler {
             }
         }
         this.scriptNode.connect(this.audioContext.destination);
-
+        
+        if (this.audioContext.state === 'suspended') {
+            this.audioContext.resume();
+        }
+        
         this.isActive = true;
 
         if (ENABLE_OSCILLOSCOPE) {
