@@ -92,13 +92,13 @@
         // === КОНФИГУРАЦИЯ ИГР ===
         // Сюда добавляй новые игры: Имя файла + Название для кнопки
         const games = [
-            { file: 'rex1.tzx', name: 'Rex (TZX)' },
-            { file: 'snake.sna', name: 'Snake (SNA)' },
-            { file: 'dizzy.z80', name: 'Dizzy (Z80)' }
-            // Добавляй новые строки по образцу: { file: 'имя_файла', name: 'Название' },
+            { file: 'rex1.tzx', name: 'R.E.X.' },
+            { file: 'RiverRaid.tap', name: 'River Raid' },
+            { file: 'PanamaJoe.tap', name: 'Panama Joe' },
+            { file: 'NetherEarth.tap', name: 'Nether Earth' },
+            { file: 'LodeRunner.z80', name: 'Lode Runner' }
         ];
 
-        // === ССЫЛКА НА ПАПКУ С ИГРАМИ ===
         const baseUrl = 'https://klalofu.github.io/jsspeccy3-mobile/games/';
 
         window.addEventListener('load', function() {
@@ -124,8 +124,7 @@
                         url: gameUrl, // Передаем ссылку на игру
                         autoStart: true,
                         autoLoad: true,
-                        // Можно добавить другие опции, например:
-                        // scale: 2 
+                        scale: 2 
                     });
                 } else {
                     console.error("JSSpeccy library not loaded! Check if jsspeccy.js script is included in head.");
@@ -156,12 +155,7 @@
         });
     </script>
 
-    <!-- ПОДКЛЮЧАЕМ БИБЛИОТЕКУ ЭМУЛЯТОРА (Важно!) -->
-    <!-- Убедись, что путь к файлу правильный. В собранном проекте он обычно в корне или в /jsspeccy -->
-    <!-- Если у тебя jsspeccy.js лежит в корне dist: -->
-    <script src="jsspeccy.js"></script>
-    <!-- Если он лежит в папке jsspeccy внутри dist (стандарт Vite), то: -->
-    <!-- <script src="jsspeccy/jsspeccy.js"></script> -->
+    <script src="runtime/jsspeccy.js"></script>
     
 </body>
 </html>
