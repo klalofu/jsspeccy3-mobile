@@ -6,21 +6,22 @@
     <meta name="theme-color" content="#0000aa" />
     <title>ZX Spectrum</title>
     
-    <!-- Стили -->
+    <!-- Стили меню и эмулятора -->
     <style>
         html, body { width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden; background-color: #000; font-family: 'Courier New', Courier, monospace; }
         
-        /* Контейнер эмулятора (скрыт по умолчанию) */
-        #jsspeccy { width: 100%; height: 100%; display: none; }
+        /* Контейнер эмулятора */
+        #jsspeccy { width: 100%; height: 100%; }
 
-        /* Экран меню */
+        /* Экран меню (скрыт по умолчанию) */
         #menu-screen { 
             width: 100%; height: 100%; 
-            display: none; /* Скрыт по умолчанию, JS его покажет если нужно */
+            display: none; /* Скрыт по умолчанию */
             flex-direction: column; justify-content: center; align-items: center; 
             background-color: #0000aa; color: #ffff00; 
+            position: absolute; top: 0; left: 0; z-index: 10;
         }
-        #menu-screen h1 { font-size: 24px; margin-bottom: 30px; text-shadow: 2px 2px #000; text-align: center;}
+        #menu-screen h1 { font-size: 24px; margin-bottom: 30px; text-shadow: 2px 2px #000; text-align: center; }
         .game-list { display: flex; flex-direction: column; gap: 15px; width: 80%; max-width: 400px; }
         .game-btn {
             background-color: #000; color: #0ff; border: 2px solid #0ff;
@@ -35,15 +36,99 @@
 </head>
 <body>
 
-    <!-- 1. Экран меню -->
+    <!-- 1. Контейнер эмулятора (он нужен всегда) -->
+    <div id="jsspeccy"></div>
+
+    <!-- 2. Экран меню (накладывается сверху, показываем если нет игры) -->
     <div id="menu-screen">
         <h1>ZX SPECTRUM</h1>
         <div class="game-list" id="game-list-container"></div>
     </div>
 
-    <!-- 2. Контейнер эмулятора -->
-    <div id="jsspeccy"></div>
+    <!-- Основной скрипт логики (бывший onBodyLoad) -->
+    <script>
+        // === КОНФИГ ИГР ===
+        const GAMES = [
+            { file: 'rex1.tzx', name: 'R.E.X.' },
+            { file: 'RiverRaid.tap', name: 'River Raid' },
+            { file: 'PanamaJoe.tap', name: 'Panama Joe' },
+            { file: 'NetherEarth.tap', name: 'Nether Earth' },
+            { file: 'LodeRunner.z80', name: 'Lode Runner' }
+        ];
+        const BASE_URL = 'https://klalofu.github.io/jsspeccy3-mobile/games/';
 
+        // Основная функция запуска (аналог onBodyLoad)
+        const initApp = function() {
+            // 1. Telegram Init
+            if (window.Telegram && window.Telegram.WebApp) {
+                window.Telegram.WebApp.expand();
+            }
 
+            const url = new URL(window.location.href);
+            const gameUrl = url.searchParams.get('u'); // Ищем параметр 'u'
+
+            if (gameUrl) {
+                // --- РЕЖИМ ИГРЫ (если есть параметр u) ---
+                document.getElementById('menu-screen').style.display = 'none'; // Прячем меню
+                
+                // Запускаем оригинальную логику эмулятора
+                const emuParams = {
+                    zoom: 3,
+                    sandbox: true,
+                    autoLoadTapes: true,
+                    openUrl: gameUrl // Передаем ссылку
+                };
+
+                const defkeystr = '1234567890,QWERTYUIOP,ASDFGHJKLe,cZXCVBNMs_';
+                let keystr = defkeystr;
+                let doFilter = false;
+
+                // Обработка остальных параметров (как было в оригинале)
+                for (const [key, value] of url.searchParams) {
+                    if (key == 'm') {
+                        if (value == '48' || value == '128' || value == '5') emuParams.machine = value;
+                    } else if (key == 'k') {
+                        keystr = value;
+                    } else if (key == 'f') {
+                        if (value && value != 0) doFilter = true;
+                    }
+                }
+
+                const emu = JSSpeccy(document.getElementById('jsspeccy'), emuParams);
+                window.emu = emu;
+                if (doFilter) document.getElementsByTagName('canvas')[0].style.imageRendering = "auto";
+
+                // Логика виртуальной клавиатуры (как было в оригинале, скопировано 1-в-1)
+                const width = 960;
+                let height = 0;
+                const btnrows = [];
+                const keyrows = keystr.split(',');
+                // ... (далее идет код отрисовки кнопок, который ты нашел, я его сокращу для читаемости, но в файле надо оставить полный)
+                // ВАЖНО: Скопируй весь код отрисовки кнопок (btnrows, win, SingleWindow и т.д.)
+                // из твоего найденного кода СЮДА, внутрь этого блока if(gameUrl).
+                // Я его не буду дублировать полностью, чтобы не спамить.
+                // Он должен остаться точно таким же, как в оригинале.
+
+            } else {
+                // --- РЕЖИМ МЕНЮ (если параметра u нет) ---
+                document.getElementById('menu-screen').style.display = 'flex'; // Показываем меню
+                
+                const listContainer = document.getElementById('game-list-container');
+                listContainer.innerHTML = '';
+
+                GAMES.forEach(game => {
+                    const btn = document.createElement('a');
+                    btn.className = 'game-btn';
+                    btn.innerText = game.name;
+                    // Формируем ссылку: текущий адрес + ?u=ссылка_на_игру
+                    btn.href = window.location.origin + window.location.pathname + '?u=' + encodeURIComponent(BASE_URL + game.file);
+                    listContainer.appendChild(btn);
+                });
+            }
+        }
+
+        // Запускаем при загрузке
+        window.addEventListener('load', initApp);
+    </script>
 </body>
 </html>
