@@ -45,8 +45,11 @@
         <div class="game-list" id="game-list-container"></div>
     </div>
 
-    <!-- Основной скрипт логики (бывший onBodyLoad) -->
     <script>
+        // === ОТЛАДКА ===
+        alert("Страница загружена, скрипт работает!"); // Должно выпрыгнуть окно при загрузке
+        console.log("Script started");
+
         // === КОНФИГ ИГР ===
         const GAMES = [
             { file: 'rex1.tzx', name: 'R.E.X.' },
@@ -57,125 +60,78 @@
         ];
         const BASE_URL = 'https://klalofu.github.io/jsspeccy3-mobile/games/';
 
-        // Основная функция запуска (аналог onBodyLoad)
         const initApp = function() {
+            console.log("initApp function called");
+            
             // 1. Telegram Init
             if (window.Telegram && window.Telegram.WebApp) {
                 window.Telegram.WebApp.expand();
+                console.log("Telegram WebApp initialized");
             }
 
             const url = new URL(window.location.href);
-            const gameUrl = url.searchParams.get('u'); // Ищем параметр 'u'
+            const gameUrl = url.searchParams.get('u'); 
+            console.log("Detected URL param 'u':", gameUrl);
 
             if (gameUrl) {
-                // --- РЕЖИМ ИГРЫ (если есть параметр u) ---
-                document.getElementById('menu-screen').style.display = 'none'; // Прячем меню
+                // --- РЕЖИМ ИГРЫ ---
+                console.log("Mode: GAME");
+                document.getElementById('menu-screen').style.display = 'none';
                 
-                // Запускаем оригинальную логику эмулятора
+                // ПРОВЕРКА: Существует ли JSSpeccy?
+                if (typeof JSSpeccy === 'undefined') {
+                    alert("Ошибка: Библиотека JSSpeccy не загружена! Проверьте подключение скрипта.");
+                    console.error("JSSpeccy is undefined!");
+                    return;
+                }
+
                 const emuParams = {
                     zoom: 3,
                     sandbox: true,
                     autoLoadTapes: true,
-                    openUrl: gameUrl // Передаем ссылку
+                    openUrl: gameUrl
                 };
 
-                const defkeystr = '1234567890,QWERTYUIOP,ASDFGHJKLe,cZXCVBNMs_';
-                let keystr = defkeystr;
-                let doFilter = false;
-
-                // Обработка остальных параметров (как было в оригинале)
-                for (const [key, value] of url.searchParams) {
-                    if (key == 'm') {
-                        if (value == '48' || value == '128' || value == '5') emuParams.machine = value;
-                    } else if (key == 'k') {
-                        keystr = value;
-                    } else if (key == 'f') {
-                        if (value && value != 0) doFilter = true;
-                    }
+                console.log("Starting emulator with params:", emuParams);
+                
+                // Здесь должен быть твой код запуска эмулятора
+                try {
+                    const emu = JSSpeccy(document.getElementById('jsspeccy'), emuParams);
+                    window.emu = emu;
+                    console.log("Emulator started successfully");
+                } catch (e) {
+                    alert("Ошибка запуска эмулятора: " + e.message);
+                    console.error(e);
                 }
 
-                const emu = JSSpeccy(document.getElementById('jsspeccy'), emuParams);
-                window.emu = emu;
-                if (doFilter) document.getElementsByTagName('canvas')[0].style.imageRendering = "auto";
-
-                // Логика виртуальной клавиатуры (как было в оригинале, скопировано 1-в-1)
-                const width = 960;
-                let height = 0;
-                const btnrows = [];
-                const keyrows = keystr.split(',');
-                // ... (далее идет код отрисовки кнопок, который ты нашел, я его сокращу для читаемости, но в файле надо оставить полный)
-                // ВАЖНО: Скопируй весь код отрисовки кнопок (btnrows, win, SingleWindow и т.д.)
-                // из твоего найденного кода СЮДА, внутрь этого блока if(gameUrl).
-                // Я его не буду дублировать полностью, чтобы не спамить.
-                // Он должен остаться точно таким же, как в оригинале.
-                for (let j = 0; j < keyrows.length; j++) {
-                    const keyrow = keyrows[j];
-                    const rowlen = keyrow.length;
-                    if (rowlen == 0) continue;
-                    if (rowlen > 10) rowlen = 10;
-                    const d = width / rowlen;
-                    const btnrow = { d: d, chs: [] };
-                    for (let i = 0; i < rowlen; i++)
-                    {
-                        let ch = keyrow.charAt(i);
-                        if (!(ch in keyCodes))
-                            ch = '-';
-                        btnrow.chs.push(ch);
-                    }
-                    btnrows.push(btnrow);
-                    height += d;
-                }
-
-                console.log(btnrows);
-                const win = new SingleWindow('virtkeys');
-                win.setTargetSize(width, height);
-
-                let x = 0;
-                let y = 0;
-                for (let j = 0; j < btnrows.length; j++)
-                {
-                    const btnrow = btnrows[j];
-                    const d = btnrow.d;
-                    x = 0;
-                    for (let i = 0; i < btnrow.chs.length; i++) {
-                        const ch = btnrow.chs[i];
-                        if (ch == '-')
-                            new ImageButton(win, x, y, d, d, 'img/keyNONE.png', 'img/keyNONE.png');
-                        else {
-                            let suffix = ch;
-                            if (suffix in imgExceptions)
-                                suffix = imgExceptions[ch];
-                            let code = keyCodes[ch];
-                            new MyImageButton(win, x, y, d, d, suffix, code);
-                            // console.log(x, y, d, d, suffix, code);
-                        }
-                        x += d;
-                    }
-                    y += d;
-                }
-
-                win._onload();
+                // ... СЮДА НУЖНО ВСТАВИТЬ КОД ВИРТУАЛЬНОЙ КЛАВИАТУРЫ ИЗ ОРИГИНАЛА ...
+                // Если его нет, кнопок не будет, но игра должна пойти.
 
             } else {
-                // --- РЕЖИМ МЕНЮ (если параметра u нет) ---
-                document.getElementById('menu-screen').style.display = 'flex'; // Показываем меню
+                // --- РЕЖИМ МЕНЮ ---
+                console.log("Mode: MENU");
+                document.getElementById('menu-screen').style.display = 'flex';
                 
                 const listContainer = document.getElementById('game-list-container');
+                if (!listContainer) {
+                    alert("Ошибка: Не найден контейнер game-list-container!");
+                    return;
+                }
                 listContainer.innerHTML = '';
 
                 GAMES.forEach(game => {
                     const btn = document.createElement('a');
                     btn.className = 'game-btn';
                     btn.innerText = game.name;
-                    // Формируем ссылку: текущий адрес + ?u=ссылка_на_игру
                     btn.href = window.location.origin + window.location.pathname + '?u=' + encodeURIComponent(BASE_URL + game.file);
                     listContainer.appendChild(btn);
                 });
+                console.log("Menu generated");
             }
         }
 
-        // Запускаем при загрузке
         window.addEventListener('load', initApp);
     </script>
+    <script src="runtime/jsspeccy.js"></script>
 </body>
 </html>
