@@ -578,6 +578,25 @@ window.JSSpeccy = (container, opts) => {
         window.location.href = window.location.pathname;
     });
 
+        // === ФИКС ЗВУКА (ВОЗВРАЩАЕМ ОБРАБОТЧИК) ===
+    // Звук заблокирован браузером. Мы разблокируем его при первом клике/касании.
+    const unlockAudio = () => {
+        // Проверяем, есть ли доступ к аудио-контексту через локальную переменную emu
+        if (emu.audioHandler && emu.audioHandler.audioContext) {
+            if (emu.audioHandler.audioContext.state === 'suspended') {
+                emu.audioHandler.audioContext.resume();
+            }
+        }
+    };
+    
+    // Слушаем клики и касания на всей странице
+    document.addEventListener('click', unlockAudio);
+    document.addEventListener('touchstart', unlockAudio);
+    
+    // Пытаемся разблокировать сразу (на случай, если переход по ссылке засчитался как жест)
+    unlockAudio();
+    // ==========================================
+    
     const openFileDialog = () => {
         fileDialog().then(files => {
             const file = files[0];
