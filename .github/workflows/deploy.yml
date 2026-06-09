@@ -27,14 +27,18 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: "18" # Изменили 20 на 18 для стабильности
+          node-version: "18"
           cache: 'npm'
       
       - name: Install dependencies
-        run: npm install # Заменили 'npm ci' на 'npm install' чтобы избежать ошибок с lock-файлом
+        run: npm install
       
       - name: Build
         run: npm run build
+        env:
+          CI: false
+          # ВОТ ЭТА СТРОКА ИСПРАВЛЯЕТ ОШИБКУ С OPENSSL:
+          NODE_OPTIONS: --openssl-legacy-provider
       
       - name: Setup Pages
         uses: actions/configure-pages@v4
