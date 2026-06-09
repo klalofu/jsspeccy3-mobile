@@ -141,9 +141,17 @@ const onBodyLoad = function()
                 games.forEach(game => {
                     const btn = document.createElement('a');
                     btn.className = 'game-btn';
-                    // Если в JSON есть имя, берем его, иначе имя файла
-                    btn.innerText = game.name; 
-                    btn.href = window.location.origin + window.location.pathname + '?u=' + encodeURIComponent(baseUrl + game.file);
+                    btn.innerText = game.name;
+
+                    // Базовая ссылка
+                    let link = window.location.origin + window.location.pathname + '?u=' + encodeURIComponent(baseUrl + game.file);
+
+                    // Если в описании игры есть поле machine (например, '128'), добавляем &m=128
+                    if (game.machine) {
+                        link += '&m=' + game.machine;
+                    }
+
+                    btn.href = link;
                     listContainer.appendChild(btn);
                 });
             })
