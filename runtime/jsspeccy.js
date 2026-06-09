@@ -664,3 +664,64 @@ window.JSSpeccy = (container, opts) => {
         exit: () => {exit();},
     };
 };
+
+
+// Список игр для меню
+const GAMES_LIST = [
+    { file: 'rex1.tzx', name: 'R.E.X.' },
+    { file: 'RiverRaid.tap', name: 'River Raid' },
+    { file: 'PanamaJoe.tap', name: 'Panama Joe' },
+    { file: 'NetherEarth.tap', name: 'Nether Earth' },
+    { file: 'LodeRunner.z80', name: 'Lode Runner' }
+];
+
+const GAMES_BASE_URL = 'https://klalofu.github.io/jsspeccy3-mobile/games/';
+
+window.addEventListener('load', () => {
+    // 1. Инициализация Telegram (если есть)
+    if (window.Telegram && window.Telegram.WebApp) {
+        window.Telegram.WebApp.expand();
+    }
+
+    // 2. Проверяем параметры URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const gameUrl = urlParams.get('u');
+
+    const menuScreen = document.getElementById('menu-screen');
+    const jsspeccyContainer = document.getElementById('jsspeccy');
+    const listContainer = document.getElementById('game-list-container');
+
+    if (gameUrl) {
+        // --- РЕЖИМ ИГРЫ ---
+        if (menuScreen) menuScreen.style.display = 'none';
+        if (jsspeccyContainer) jsspeccyContainer.style.display = 'block';
+
+        // Запускаем эмулятор
+        // Важно: используем window.JSSpeccy, который определен выше в этом же файле
+        if (window.JSSpeccy) {
+            new window.JSSpeccy(jsspeccyContainer, {
+                url: gameUrl,
+                autoStart: true,
+                autoLoad: true
+            });
+        }
+
+    } else {
+        // --- РЕЖИМ МЕНЮ ---
+        if (menuScreen) menuScreen.style.display = 'flex';
+        if (jsspeccyContainer) jsspeccyContainer.style.display = 'none';
+
+        // Генерируем кнопки
+        if (listContainer) {
+            listContainer.innerHTML = ''; 
+            GAMES_LIST.forEach(game => {
+                const btn = document.createElement('a');
+                btn.className = 'game-btn';
+                btn.innerText = game.name;
+                // Формируем ссылку с параметром ?u=
+                btn.href = window.location.origin + window.location.pathname + '?u=' + encodeURIComponent(GAMES_BASE_URL + game.file);
+                listContainer.appendChild(btn);
+            });
+        }
+    }
+});
