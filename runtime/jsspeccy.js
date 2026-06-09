@@ -489,6 +489,7 @@ window.JSSpeccy = (container, opts) => {
     ui.toolbar.addButton(resetIcon, {label: 'Reset'}, () => {
         emu.reset();
     });
+    /*
     const pauseButton = ui.toolbar.addButton(playIcon, {label: 'Unpause'}, () => {
         if (emu.isRunning) {
             emu.pause();
@@ -504,6 +505,7 @@ window.JSSpeccy = (container, opts) => {
         pauseButton.setIcon(pauseIcon);
         pauseButton.setLabel('Pause');
     });
+    */
     const tapeButton = ui.toolbar.addButton(tapePlayIcon, {label: 'Start tape'}, () => {
         if (emu.tapeIsPlaying) {
             emu.stopTape();
