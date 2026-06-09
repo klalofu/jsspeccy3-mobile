@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="theme-color" content="#000000" />
+    <title>ZX Spectrum Emulator</title>
+    
+    <!-- Стили для меню и эмулятора -->
+    <style>
+        html, body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            overflow: hidden;
+            font-family: 'Courier New', Courier, monospace; /* Ретро-шрифт */
+        }
+
+        /* Контейнер эмулятора */
+        #jsspeccy {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Стили МЕНЮ */
+        #menu-screen {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: #0000aa; /* Синий фон как у Спектрума */
+            color: #ffff00; /* Желтый текст */
+        }
+
+        #menu-screen h1 {
+            font-size: 24px;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px #000;
+            text-align: center;
+            padding: 0 10px;
+        }
+
+        .game-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 80%;
+            max-width: 400px;
+        }
+
+        .game-btn {
+            background-color: #000;
+            color: #0ff; /* Бирюзовый текст кнопок */
+            border: 2px solid #0ff;
+            padding: 15px;
+            font-size: 16px;
+            font-family: inherit;
+            cursor: pointer;
+            text-decoration: none;
+            text-align: center;
+            transition: 0.2s;
+        }
+
+        .game-btn:hover, .game-btn:active {
+            background-color: #0ff;
+            color: #000;
+        }
+    </style>
+
+    <!-- Скрипт Telegram -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+
+    <!-- ЭКРАН МЕНЮ (по умолчанию скрыт, показывается JS если игры нет) -->
+    <div id="menu-screen" style="display: none;">
+        <h1>ZX SPECTRUM</h1>
+        <div class="game-list" id="game-list-container">
+            <!-- Сюда JS вставит кнопки игр -->
+        </div>
+    </div>
+
+    <!-- ЭМУЛЯТОР (по умолчанию скрыт, показывается JS если игра есть) -->
+    <div id="jsspeccy" style="display: none;"></div>
+
+    <!-- СКРИПТ ЛОГИКИ -->
+    <script>
+        // === КОНФИГУРАЦИЯ ИГР ===
+        // Сюда добавляй новые игры: Имя файла + Название для кнопки
+        const games = [
+            { file: 'rex1.tzx', name: 'Rex (TZX)' },
+            { file: 'snake.sna', name: 'Snake (SNA)' },
+            { file: 'dizzy.z80', name: 'Dizzy (Z80)' }
+            // Добавляй новые строки по образцу: { file: 'имя_файла', name: 'Название' },
+        ];
+
+        // === ССЫЛКА НА ПАПКУ С ИГРАМИ ===
+        const baseUrl = 'https://klalofu.github.io/jsspeccy3-mobile/games/';
+
+        window.addEventListener('load', function() {
+            // 1. Инициализация Telegram
+            if (window.Telegram && window.Telegram.WebApp) {
+                window.Telegram.WebApp.expand();
+                window.Telegram.WebApp.setHeaderColor('#0000aa');
+            }
+
+            // 2. Проверяем, есть ли параметр ?u= в адресе
+            const urlParams = new URLSearchParams(window.location.search);
+            const gameUrl = urlParams.get('u');
+
+            if (gameUrl) {
+                // --- РЕЖИМ ИГРЫ ---
+                document.getElementById('menu-screen').style.display = 'none';
+                document.getElementById('jsspeccy').style.display = 'block';
+
+                // Запускаем JSSpeccy
+                // Проверяем, есть ли глобальный класс JSSpeccy
+                if (typeof JSSpeccy !== 'undefined') {
+                    new JSSpeccy(document.getElementById('jsspeccy'), {
+                        url: gameUrl, // Передаем ссылку на игру
+                        autoStart: true,
+                        autoLoad: true,
+                        // Можно добавить другие опции, например:
+                        // scale: 2 
+                    });
+                } else {
+                    console.error("JSSpeccy library not loaded! Check if jsspeccy.js script is included in head.");
+                }
+
+            } else {
+                // --- РЕЖИМ МЕНЮ ---
+                document.getElementById('jsspeccy').style.display = 'none';
+                document.getElementById('menu-screen').style.display = 'flex';
+
+                // Генерируем кнопки
+                const container = document.getElementById('game-list-container');
+                container.innerHTML = ''; // Очищаем контейнер
+
+                games.forEach(game => {
+                    const btn = document.createElement('a');
+                    btn.className = 'game-btn';
+                    btn.innerText = game.name;
+                    
+                    // При клике перезагружаем страницу с параметром ?u=...
+                    // Используем window.location.search чтобы сохранить другие параметры (если есть)
+                    // Но для простоты просто перенаправляем на новый URL
+                    btn.href = window.location.origin + window.location.pathname + '?u=' + encodeURIComponent(baseUrl + game.file);
+                    
+                    container.appendChild(btn);
+                });
+            }
+        });
+    </script>
+
+    <!-- ПОДКЛЮЧАЕМ БИБЛИОТЕКУ ЭМУЛЯТОРА (Важно!) -->
+    <!-- Убедись, что путь к файлу правильный. В собранном проекте он обычно в корне или в /jsspeccy -->
+    <!-- Если у тебя jsspeccy.js лежит в корне dist: -->
+    <script src="jsspeccy.js"></script>
+    <!-- Если он лежит в папке jsspeccy внутри dist (стандарт Vite), то: -->
+    <!-- <script src="jsspeccy/jsspeccy.js"></script> -->
+    
+</body>
+</html>
