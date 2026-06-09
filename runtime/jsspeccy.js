@@ -543,6 +543,11 @@ window.JSSpeccy = (container, opts) => {
             fullscreenButton.setLabel('Enter full screen mode');
         }
     });
+    const menuIconSvg = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBmaWxsPSIjZmZmIiBkPSJNMTAgMjB2LThoNHY2aDV2LThoM0wxMiAzIDIgMTJoM3Y4eiIvPjwvc3ZnPg==';
+    
+    ui.toolbar.addButton(menuIconSvg, {label: 'Games Menu', align: 'right'}, () => {
+        window.location.href = window.location.pathname;
+    });
 
     const openFileDialog = () => {
         fileDialog().then(files => {
