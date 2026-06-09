@@ -37,9 +37,16 @@ jobs:
         run: npm run build
         env:
           CI: false
-          # ВОТ ЭТА СТРОКА ИСПРАВЛЯЕТ ОШИБКУ С OPENSSL:
           NODE_OPTIONS: --openssl-legacy-provider
       
+      - name: Copy games to dist
+        run: |
+          mkdir -p dist/games
+          cp games/*.tzx dist/games/
+          cp games/*.tap dist/games/
+      
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
       - name: Setup Pages
         uses: actions/configure-pages@v4
       
