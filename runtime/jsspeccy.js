@@ -581,17 +581,20 @@ window.JSSpeccy = (container, opts) => {
     // === ФИКС ЗВУКА (для Telegram/Chrome) ===
     // Браузеры блокируют автовоспроизведение звука.
     // Добавим слушатель: первый клик на страницу (или кнопку) разблокирует звук.
-    const unlockAudio = () => {
+    emu.on('start', () => {
         if (emu.audioHandler && emu.audioHandler.audioContext) {
+            // Пытаемся разблокировать аудио-контекст
             if (emu.audioHandler.audioContext.state === 'suspended') {
-                emu.audioHandler.audioContext.resume();
+                emu.audioHandler.audioContext.resume().then(() => {
+                    console.log('Audio unlocked successfully!');
+                }).catch(e => {
+                    console.log('Audio unlock failed (browser policy)', e);
+                    // Если не вышло, звук всё равно включится при первом касании экрана
+                    // из-за стандартных обработчиков эмулятора
+                });
             }
         }
-        document.removeEventListener('click', unlockAudio);
-        document.removeEventListener('touchstart', unlockAudio);
-    };
-    document.addEventListener('click', unlockAudio);
-    document.addEventListener('touchstart', unlockAudio);
+    });
     // ========================================
 
     const openFileDialog = () => {
