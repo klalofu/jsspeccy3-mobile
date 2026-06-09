@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>ZX Spectrum</title>
+    <style>
+        body { margin: 0; background: #000; overflow: hidden; }
+        #jsspeccy { width: 100vw; height: 100vh; }
+    </style>
+</head>
+<body>
+    <div id="jsspeccy"></div>
+    
+    <script type="module" src="jsspeccy.js"></script>
+    <script type="module">
+        const emu = JSSpeccy(document.getElementById('jsspeccy'), {
+            zoom: 2,
+            machine: 48,
+            autoStart: false,
+            sandbox: true
+        });
+        
+        emu.onReady(() => {
+            const game = new URLSearchParams(window.location.search).get('game') || 'elven.z80';
+            emu.openUrl(game);
+        });
+    </script>
+</body>
+</html>
