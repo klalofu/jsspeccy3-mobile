@@ -33,6 +33,25 @@ jobs:
       - name: Install dependencies
         run: npm install
       
+      - name: Generate games list
+        run: |
+          python3 -c "
+          import os
+          import json
+          games = []
+          # Сканируем папку games
+          for f in sorted(os.listdir('games')):
+              if f.lower().endswith(('.tap', '.tzx', '.sna', '.z80')):
+                  # Имя берем из названия файла (без расширения)
+                  name = os.path.splitext(f)[0]
+                  games.append({'file': f, 'name': name})
+          # Сохраняем в файл dist/games.json
+          os.makedirs('dist', exist_ok=True)
+          with open('dist/games.json', 'w') as out:
+              json.dump(games, out, indent=2)
+          print('Generated games.json with', len(games), 'games')
+          "
+
       - name: Build
         run: npm run build
         env:

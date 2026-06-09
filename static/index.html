@@ -118,37 +118,42 @@ const onBodyLoad = function()
 
     if (!gameUrlParam) {
         // --- РЕЖИМ МЕНЮ ---
-        // Скрываем контейнеры эмулятора
+        document.getElementById('menu-screen').style.display = 'flex';
         document.getElementById('jsspeccy').style.display = 'none';
         document.getElementById('guiparent').style.display = 'none';
-        // Показываем меню
-        document.getElementById('menu-screen').style.display = 'flex';
-
-        // Список игр
-        const games = [
-            { file: 'rex1.tzx', name: 'R.E.X.' },
-            { file: 'RiverRaid.tap', name: 'River Raid' },
-            { file: 'PanamaJoe.tap', name: 'Panama Joe' },
-            { file: 'NetherEarth.tap', name: 'Nether Earth' },
-            { file: 'LodeRunner.z80', name: 'Lode Runner' }
-        ];
-        const baseUrl = 'https://klalofu.github.io/jsspeccy3-mobile/games/';
+        
         const listContainer = document.getElementById('game-list-container');
+        listContainer.innerHTML = 'Loading game list...'; // Сообщение о загрузке
 
-        // Генерация кнопок
-        listContainer.innerHTML = '';
-        games.forEach(game => {
-            const btn = document.createElement('a');
-            btn.className = 'game-btn';
-            btn.innerText = game.name;
-            // При клике перезагружаем страницу с параметром ?u=...
-            btn.href = window.location.origin + window.location.pathname + '?u=' + encodeURIComponent(baseUrl + game.file);
-            listContainer.appendChild(btn);
-        });
+        const baseUrl = 'https://klalofu.github.io/jsspeccy3-mobile/games/';
 
-        return; // Останавливаем выполнение функции, не запускаем эмулятор
+        // Загружаем автоматически сгенерированный список
+        fetch('games.json')
+            .then(response => response.json())
+            .then(games => {
+                listContainer.innerHTML = ''; // Очищаем "Loading..."
+                
+                if (games.length === 0) {
+                    listContainer.innerHTML = '<div style="color:white">No games found</div>';
+                    return;
+                }
+
+                games.forEach(game => {
+                    const btn = document.createElement('a');
+                    btn.className = 'game-btn';
+                    // Если в JSON есть имя, берем его, иначе имя файла
+                    btn.innerText = game.name; 
+                    btn.href = window.location.origin + window.location.pathname + '?u=' + encodeURIComponent(baseUrl + game.file);
+                    listContainer.appendChild(btn);
+                });
+            })
+            .catch(err => {
+                console.error(err);
+                listContainer.innerHTML = 'Error loading list';
+            });
+
+        return;
     }
-
     // --- РЕЖИМ ИГРЫ (Оригинальный код) ---
     // Скрываем меню на всякий случай
     document.getElementById('menu-screen').style.display = 'none';
