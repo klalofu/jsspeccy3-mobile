@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>ZX Spectrum</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="theme-color" content="#000000" />
     <style>
         body { margin: 0; background: #000; overflow: hidden; }
         #jsspeccy { width: 100vw; height: 100vh; }
@@ -18,6 +20,7 @@
         #jsspeccy {
             width: 100%;
             height: 100%;
+            display: block;
         }
     </style>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -26,17 +29,20 @@
             if (window.Telegram && window.Telegram.WebApp) {
                 const tg = window.Telegram.WebApp;
                 
-                // 1. ГЛАВНАЯ КОМАНДА: Разворачивает окно на весь экран
+                // 1. Разворачиваем на всю высоту (важно для Android)
                 tg.expand();
                 
-                // 2. Настройки под стиль
+                // 2. Ставим черный цвет фона шапки
                 tg.setHeaderColor('#000000');
                 tg.setBackgroundColor('#000000');
+                // 3. Слушаем событие изменения размера viewport'а
+                tg.onEvent('viewportChanged', function() {
+                    // Заставляем эмулятор пересчитать свой размер
+                    window.dispatchEvent(new Event('resize'));
+                });
             }
 
-            // ДОПОЛНИТЕЛЬНЫЙ ХАК:
-            // Иногда эмулятор инициализируется ДО того, как Telegram успевает развернуть окно.
-            // Заставим эмулятор пересчитать размер через 100мс после загрузки.
+            // Хак для первоначальной отрисовки
             setTimeout(function() {
                 if (window.jsspeccy && window.jsspeccy.resize) {
                     window.jsspeccy.resize();
