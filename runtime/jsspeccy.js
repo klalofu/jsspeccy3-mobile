@@ -533,7 +533,7 @@ window.JSSpeccy = (container, opts) => {
             ui.toggleFullscreen();
         }
     )
-
+    /*
     ui.on('setZoom', (factor) => {
         if (factor == 'fullscreen') {
             fullscreenButton.setIcon(exitFullscreenIcon);
@@ -548,7 +548,53 @@ window.JSSpeccy = (container, opts) => {
     ui.toolbar.addButton(menuIconSvg, {label: 'Games Menu', align: 'right'}, () => {
         window.location.href = window.location.pathname;
     });
+    */
+       // === КОД КНОПКИ "МЕНЮ" (ИСПРАВЛЕННЫЙ) ===
+    // Создаем кнопку через обычный HTML элемент
+    const menuBtn = document.createElement('div');
+    menuBtn.innerHTML = '☰ Menu'; // Символ "гамбургер" и текст
+    // Стили, чтобы кнопка висела поверх эмулятора в правом верхнем углу
+    menuBtn.style.cssText = `
+        position: absolute; 
+        top: 5px; 
+        right: 5px; 
+        z-index: 99999; 
+        background-color: rgba(0, 0, 0, 0.7); 
+        color: white; 
+        padding: 5px 10px; 
+        border: 1px solid #fff; 
+        border-radius: 4px; 
+        font-family: sans-serif; 
+        font-size: 14px; 
+        cursor: pointer;
+        user-select: none;
+    `;
+    
+    // Добавляем кнопку в контейнер эмулятора
+    container.appendChild(menuBtn);
 
+    // Логика клика
+    menuBtn.addEventListener('click', () => {
+        window.location.href = window.location.pathname;
+    });
+
+    // === ФИКС ЗВУКА (для Telegram/Chrome) ===
+    // Браузеры блокируют автовоспроизведение звука.
+    // Добавим слушатель: первый клик на страницу (или кнопку) разблокирует звук.
+    const unlockAudio = () => {
+        if (window.emu && window.emu.audioHandler && window.emu.audioHandler.audioContext) {
+            if (window.emu.audioHandler.audioContext.state === 'suspended') {
+                window.emu.audioHandler.audioContext.resume();
+            }
+        }
+        // Удаляем слушатели после первого срабатывания
+        document.removeEventListener('click', unlockAudio);
+        document.removeEventListener('touchstart', unlockAudio);
+    };
+    document.addEventListener('click', unlockAudio);
+    document.addEventListener('touchstart', unlockAudio);
+    // ========================================
+    
     const openFileDialog = () => {
         fileDialog().then(files => {
             const file = files[0];
