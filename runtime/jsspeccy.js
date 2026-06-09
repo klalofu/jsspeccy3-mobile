@@ -582,19 +582,18 @@ window.JSSpeccy = (container, opts) => {
     // Браузеры блокируют автовоспроизведение звука.
     // Добавим слушатель: первый клик на страницу (или кнопку) разблокирует звук.
     const unlockAudio = () => {
-        if (window.emu && window.emu.audioHandler && window.emu.audioHandler.audioContext) {
-            if (window.emu.audioHandler.audioContext.state === 'suspended') {
-                window.emu.audioHandler.audioContext.resume();
+        if (emu.audioHandler && emu.audioHandler.audioContext) {
+            if (emu.audioHandler.audioContext.state === 'suspended') {
+                emu.audioHandler.audioContext.resume();
             }
         }
-        // Удаляем слушатели после первого срабатывания
         document.removeEventListener('click', unlockAudio);
         document.removeEventListener('touchstart', unlockAudio);
     };
     document.addEventListener('click', unlockAudio);
     document.addEventListener('touchstart', unlockAudio);
     // ========================================
-    
+
     const openFileDialog = () => {
         fileDialog().then(files => {
             const file = files[0];
