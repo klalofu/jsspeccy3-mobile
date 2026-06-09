@@ -6,16 +6,44 @@
     <style>
         body { margin: 0; background: #000; overflow: hidden; }
         #jsspeccy { width: 100vw; height: 100vh; }
+        html, body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden; /* Убираем скроллбары */
+            background-color: #000; /* Фон черный, как у спектрума */
+        }
+        
+        #jsspeccy {
+            width: 100%;
+            height: 100%;
+        }
     </style>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script>
         window.addEventListener('load', function() {
             if (window.Telegram && window.Telegram.WebApp) {
                 const tg = window.Telegram.WebApp;
+                
+                // 1. ГЛАВНАЯ КОМАНДА: Разворачивает окно на весь экран
                 tg.expand();
-                tg.setHeaderColor('#000000'); 
-                tg.MainButton.hide();
+                
+                // 2. Настройки под стиль
+                tg.setHeaderColor('#000000');
+                tg.setBackgroundColor('#000000');
             }
+
+            // ДОПОЛНИТЕЛЬНЫЙ ХАК:
+            // Иногда эмулятор инициализируется ДО того, как Telegram успевает развернуть окно.
+            // Заставим эмулятор пересчитать размер через 100мс после загрузки.
+            setTimeout(function() {
+                if (window.jsspeccy && window.jsspeccy.resize) {
+                    window.jsspeccy.resize();
+                }
+                // На всякий случай триггерим событие resize для всего окна
+                window.dispatchEvent(new Event('resize'));
+            }, 200);
         });
     </script>
 </head>
