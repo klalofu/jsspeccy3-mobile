@@ -401,8 +401,8 @@ window.JSSpeccy = (container, opts) => {
     opts = opts || {};
 
     const canvas = document.createElement('canvas');
-    //canvas.width = 320;
-    //canvas.height = 240;
+    canvas.width = 640;
+    canvas.height = 480;
 
     canvas.style.width = '100%'; 
     canvas.style.height = 'auto';
