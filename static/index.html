@@ -137,7 +137,7 @@ const onBodyLoad = function()
                     listContainer.innerHTML = '<div style="color:white">No games found</div>';
                     return;
                 }
-
+                /*
                 games.forEach(game => {
                     const btn = document.createElement('a');
                     btn.className = 'game-btn';
@@ -150,6 +150,30 @@ const onBodyLoad = function()
                     if (game.machine) {
                         link += '&m=' + game.machine;
                     }
+
+                    btn.href = link;
+                    listContainer.appendChild(btn);
+                });
+                */
+                games.forEach(game => {
+                    const btn = document.createElement('a');
+                    btn.className = 'game-btn';
+                    btn.innerText = game.name;
+
+                    let link = window.location.origin + window.location.pathname + '?u=' + encodeURIComponent(baseUrl + game.file);
+
+                    // === НОВАЯ ЛОГИКА ===
+                    // По умолчанию ставим 48K
+                    let machineParam = '48'; 
+                    
+                    // Если в json указано 128 или 5 (Pentagon), меняем
+                    if (game.machine === '128' || game.machine === '5') {
+                        machineParam = game.machine;
+                    }
+                    
+                    // Всегда добавляем параметр m к ссылке
+                    link += '&m=' + machineParam;
+                    // ====================
 
                     btn.href = link;
                     listContainer.appendChild(btn);
