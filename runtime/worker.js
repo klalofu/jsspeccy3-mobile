@@ -55,7 +55,8 @@ const loadSnapshot = (snapshot) => {
         core.writePort(0x7ffd, snapshot.ulaState.pagingFlags);
     }
 
-    core.setTStates(snapshot.tstates);
+    //core.setTStates(snapshot.tstates);
+    core.setTStates(80000);
     console.log('tacts in snapshot: ', snapshot.tstates)
 };
 
