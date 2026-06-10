@@ -256,6 +256,8 @@ onmessage = (e) => {
         case 'readMemory':
             // Определяем размер памяти для снятия дампа.
             // 128KB = 131072 байт (8 страниц по 16КБ).
+            console.log(`DEBUG WORKER: Machine type is ${currentMachineType}, calculating size...`);
+            
             const memSize = (currentMachineType == 48) ? 49152 : 131072;
             const memStart = core.MACHINE_MEMORY;
             

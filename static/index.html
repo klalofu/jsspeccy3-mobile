@@ -173,6 +173,7 @@ const onBodyLoad = function()
         sandbox: false,
         autoLoadTapes: true,
         autoStart: true,
+        machine: 48
     };
 
     const defkeystr = '1234567890,QWERTYUIOP,ASDFGHJKLe,cZXCVBNMs_';
@@ -184,8 +185,8 @@ const onBodyLoad = function()
     for (const [key, value] of url.searchParams)
     {
         if (key == 'm') {
-            if (value == '48' || value == '128' || value == '5')
-                emuParams.machine = value;
+            if (value == '128' || value == '5')
+                emuParams.machine = 128;
         }
         else if (key == 'k') {
             keystr = value;
@@ -254,6 +255,7 @@ const onBodyLoad = function()
 
         // --- Получаем тип машины (из настроек эмулятора) ---
         let machineType = '48K'; // Значение по умолчанию
+        /*
         if (window.emu && window.emu.machineType) {
             const type = window.emu.machineType;
             if (type == 48) machineType = '48K';
@@ -261,6 +263,11 @@ const onBodyLoad = function()
             else if (type == 5) machineType = 'Pentagon';
             else machineType = 'Model ' + type;
         }
+        */
+        if (emuParams.machine === 128) {
+            machineType = '128K';
+        }
+
 
         // Проверяем, открыто ли приложение внутри Телеграма
         if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe.user) {
