@@ -430,6 +430,18 @@ function simulateKey (keyCode, type, modifiers) {
 
     document.dispatchEvent(event);
 }
+// Включение/выключение турбо по кнопке T
+let turboActive = false;
+document.addEventListener('keydown', (e) => {
+    if (e.key === 't' || e.key === 'T' || e.code === 'KeyT') {
+        turboActive = !turboActive;
+        window.emu.setTurbo(turboActive);
+        console.log("Turbo mode:", turboActive ? "ON" : "OFF");
+        
+        // Можно вывести сообщение на экран (опционально)
+        // alert(turboActive ? "TURBO ON" : "TURBO OFF"); 
+    }
+});
 /*****************************************************************************/        
     </script>
 </html>

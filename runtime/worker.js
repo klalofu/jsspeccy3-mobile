@@ -254,6 +254,9 @@ onmessage = (e) => {
         case 'setTapeTraps':
             core.setTapeTraps(e.data.value);
             break;
+        case 'setTurbo':
+            core.setTurbo(e.data.value);
+            break;
         case 'readMemory':
             // Определяем размер памяти для снятия дампа.
             // 128KB = 131072 байт (8 страниц по 16КБ).

@@ -318,7 +318,12 @@ class Emulator extends EventEmitter {
             }
         }
     }
-
+    setTurbo(enabled) {
+        this.worker.postMessage({
+            message: 'setTurbo',
+            value: enabled
+        });
+    }
     async openFile(file) {
         const opener = this.getFileOpener(file.name);
         if (opener) {
@@ -739,5 +744,6 @@ window.JSSpeccy = (container, opts) => {
         },
         exit: () => {exit();},
         readMemory: () => emu.readMemory(),
+        setTurbo: (enabled) => emu.setTurbo(enabled),
     };
 };

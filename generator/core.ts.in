@@ -100,6 +100,10 @@ let betadiskEnabled:bool = false;
 let betadiskROMActive:bool = false;
 let tapeTrapsEnabled:bool = true;
 
+let frameCycleCount:u32 = 69888;
+let baseFrameCycleCount:u32 = 69888; // base tacts value
+let turboMultiplier:u8 = 1;          // 1 = norm, 2 = turbo
+
 let i:u8 = 0;
 while (true) {
     sz53Table[i] = u8(i) & ( FLAG_3 | FLAG_5 | FLAG_S );
@@ -206,8 +210,6 @@ function clearContentionTable(frameCycleCount:u32):void {
 }
 
 
-//let frameCycleCount:u32 = 69888;
-let frameCycleCount:u32 = 139776;
 let screenPageIndex:u32 = 5;
 let pagingLocked:bool = 0;
 let t:u32 = 0;
@@ -240,7 +242,7 @@ let machineType:u32 = 48;
 export function setMachineType(type:u32):void {
     machineType = type;
     if (type == 48 || type == 1212) {
-        frameCycleCount = 139766; //turbo
+        frameCycleCount = 69888;
         recalculateAYCyclesPerSample();
         buildScreenEventsTable(14335, 224, 0xfc);
         buildContentionTable(14335, 224, frameCycleCount);
@@ -263,6 +265,9 @@ export function setMachineType(type:u32):void {
         rom1Page = 9;
         betadiskEnabled = false;
     }
+    frameCycleCount = baseFrameCycleCount * <u32>turboMultiplier;
+    recalculateAYCyclesPerSample();
+
     reset();
 }
 export function reset():void {
@@ -357,6 +362,25 @@ export function getHalted():bool {
 }
 export function setTapeTraps(val:bool):void {
     tapeTrapsEnabled = val;
+}
+
+export function setTurbo(enabled:bool):void {
+    if (enabled) {
+        turboMultiplier = 2;
+    } else {
+        turboMultiplier = 1;
+    }
+    
+    // Пересчитываем длину кадра
+    frameCycleCount = baseFrameCycleCount * <u32>turboMultiplier;
+    
+    // Пересчитываем тайминги звука
+    recalculateAYCyclesPerSample();
+    
+    // Перестраиваем таблицу конфликтов
+    // В турбо-режиме обычно убирают конфликты (slowdown), чтобы шло быстрее
+    // Или перестраиваем её под новый размер. Для простоты - очистим, чтобы не вылететь за границы
+    clearContentionTable(frameCycleCount);
 }
 
 function log(time:u32, type:u16, addr:u16, val:u8):void {
