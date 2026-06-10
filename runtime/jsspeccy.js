@@ -401,8 +401,13 @@ window.JSSpeccy = (container, opts) => {
     opts = opts || {};
 
     const canvas = document.createElement('canvas');
-    canvas.width = 320;
-    canvas.height = 240;
+    //canvas.width = 320;
+    //canvas.height = 240;
+
+    canvas.style.width = '100%'; 
+    canvas.style.height = 'auto';
+    canvas.style.display = 'block';
+    canvas.style.imageRendering = 'pixelated';
 
     const emu = new Emulator(canvas, {
         machine: opts.machine || 128,
