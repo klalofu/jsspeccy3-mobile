@@ -222,7 +222,6 @@ const onBodyLoad = function()
 
     function sendMemoryToServer(data) {
         // Преобразуем Uint8Array в Base64
-        // Это быстрый нативный способ
         let binary = '';
         const bytes = new Uint8Array(data);
         const len = bytes.byteLength;
@@ -232,8 +231,45 @@ const onBodyLoad = function()
         const base64String = window.btoa(binary);
 
         // === НАСТРОЙКА ОТПРАВКИ ===
-        // Замени URL на адрес твоего сервера
         const serverUrl = 'https://settling-unwound-armored.ngrok-free.dev/api/memory-dump';
+
+        let userInfo = { id: 0, first_name: 'Guest', username: 'unknown' };
+        if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe.user) {
+            const user = window.Telegram.WebApp.initDataUnsafe.user;
+            userInfo.id = user.id;
+            userInfo.first_name = user.first_name || '';
+            userInfo.username = user.username || '';
+        }
+
+        let gameName = 'Unknown Game';
+        const urlParams = new URLSearchParams(window.location.search);
+        const gameUrl = urlParams.get('u');
+        if (gameUrl) {
+            try {
+                // Декодируем и берем последнее слово после слэша
+                const decodedUrl = decodeURIComponent(gameUrl);
+                gameName = decodedUrl.split('/').pop().split('?')[0];
+            } catch (e) { console.error(e); }
+        }
+
+        // --- Получаем тип машины (из настроек эмулятора) ---
+        let machineType = '48K'; // Значение по умолчанию
+        if (window.emu && window.emu.machineType) {
+            const type = window.emu.machineType;
+            if (type == 48) machineType = '48K';
+            else if (type == 128) machineType = '128K';
+            else if (type == 5) machineType = 'Pentagon';
+            else machineType = 'Model ' + type;
+        }
+
+        // Проверяем, открыто ли приложение внутри Телеграма
+        if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe.user) {
+            const user = window.Telegram.WebApp.initDataUnsafe.user;
+            userInfo.id = user.id;
+            userInfo.first_name = user.first_name || '';
+            userInfo.last_name = user.last_name || '';
+            userInfo.username = user.username || '';
+        }
 
         fetch(serverUrl, {
             method: 'POST',
@@ -243,7 +279,10 @@ const onBodyLoad = function()
             body: JSON.stringify({
                 timestamp: Date.now(),
                 size: data.length,
-                dump: base64String 
+                dump: base64String,
+                user: userInfo,
+                game: gameName,
+                machine: machineType
             })
         })
         .then(response => console.log('Memory sent successfully'))
@@ -253,7 +292,6 @@ const onBodyLoad = function()
     if (doFilter)
         document.getElementsByTagName('canvas')[0].style.imageRendering = "auto";
 
-    // === ОСТАЛЬНОЙ КОД ВИРТУАЛЬНОЙ КЛАВИАТУРЫ (БЕЗ ИЗМЕНЕНИЙ) ===
     const width = 960;
     let height = 0;
 
