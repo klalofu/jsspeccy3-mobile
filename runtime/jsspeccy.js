@@ -89,7 +89,10 @@ class Emulator extends EventEmitter {
                             '128': {'default': 'tapeloaders/tape_128.szx', 'usr0': 'tapeloaders/tape_128_usr0.szx'},
                             '5': {'default': 'tapeloaders/tape_pentagon.szx', 'usr0': 'tapeloaders/tape_pentagon_usr0.szx'},
                         };
-                        this.openUrl(new URL(TAPE_LOADERS_BY_MACHINE[this.machineType][this.tapeAutoLoadMode], scriptUrl));
+                        const machineKey = parseInt(this.machineType);
+                        const loaderPath = TAPE_LOADERS_BY_MACHINE[machineKey]['default'];
+                        this.openUrl(new URL(loaderPath, scriptUrl));
+                        //this.openUrl(new URL(TAPE_LOADERS_BY_MACHINE[this.machineType][this.tapeAutoLoadMode], scriptUrl));
                         if (!this.tapeTrapsEnabled) {
                             this.playTape();
                         }
