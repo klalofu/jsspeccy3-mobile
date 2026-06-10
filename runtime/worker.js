@@ -208,7 +208,7 @@ onmessage = (e) => {
             break;
         case 'loadSnapshot':
             loadSnapshot(e.data.snapshot);
-            currentMachineType = e.data.snapshot.model;
+            //currentMachineType = e.data.snapshot.model;
             postMessage({
                 message: 'fileOpened',
                 id: e.data.id,
