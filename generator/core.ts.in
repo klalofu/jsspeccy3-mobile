@@ -57,16 +57,20 @@ overflowSubTable = [0, FLAG_V, 0, 0, 0, 0, FLAG_V, 0];
 #alloc parityTable[0x100]: u8
 #alloc sz53pTable[0x100]: u8
 
-#alloc contentionTable[72000]: u8
+//#alloc contentionTable[72000]: u8 #kla: turbo!
+#alloc contentionTable[200000]: u8
 
+//#alloc screenEvents[36000]: u32 #kla: turbo!
 #alloc screenEvents[36000]: u32
 
 #alloc keyStates[8]: u8
 
 // NB needs to start at an offset that's a multiple of 4
-#alloc audioBufferLeft[1024]: f32
+//#alloc audioBufferLeft[1024]: f32 #kla: turbo!
+#alloc audioBufferLeft[2048]: f32
 export const AUDIO_BUFFER_LEFT:usize = (&audioBufferLeft);
-#alloc audioBufferRight[1024]: f32
+//#alloc audioBufferRight[1024]: f32 #kla: turbo!
+#alloc audioBufferRight[2048]: f32
 export const AUDIO_BUFFER_RIGHT:usize = (&audioBufferLeft);
 
 #alloc tapePulses[10000]: u16
