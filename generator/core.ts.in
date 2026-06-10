@@ -202,7 +202,8 @@ function clearContentionTable(frameCycleCount:u32):void {
 }
 
 
-let frameCycleCount:u32 = 69888;
+//let frameCycleCount:u32 = 69888;
+let frameCycleCount:u32 = 139776;
 let screenPageIndex:u32 = 5;
 let pagingLocked:bool = 0;
 let t:u32 = 0;
@@ -235,7 +236,7 @@ let machineType:u32 = 48;
 export function setMachineType(type:u32):void {
     machineType = type;
     if (type == 48 || type == 1212) {
-        frameCycleCount = 69888;
+        frameCycleCount = 139766; //turbo
         recalculateAYCyclesPerSample();
         buildScreenEventsTable(14335, 224, 0xfc);
         buildContentionTable(14335, 224, frameCycleCount);
