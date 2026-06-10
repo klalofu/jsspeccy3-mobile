@@ -375,7 +375,7 @@ export function setTurbo(enabled:bool):void {
     frameCycleCount = baseFrameCycleCount * <u32>turboMultiplier;
     
     // Пересчитываем тайминги звука
-    recalculateAYCyclesPerSample();
+    //recalculateAYCyclesPerSample();
     
     // Перестраиваем таблицу конфликтов
     // В турбо-режиме обычно убирают конфликты (slowdown), чтобы шло быстрее
