@@ -20,14 +20,21 @@
                 background-color: #000; /* Черный фон по умолчанию */
                 font-family: 'Courier New', Courier, monospace; /* Для меню */
             }
-            
-            /* Контейнеры эмулятора */
-            #jsspeccy, #guiparent {
-                /* Оставляем 100% ширину для адаптивности, но ограничиваем макс. ширину */
-                width: 100%;
-                max-width: 960px;
-                margin: auto;
+
+            #jsspeccy {
+                width: 100%;       /* На всю ширину экрана */
+                height: auto;      /* Высота подбирается автоматически */
+                max-width: none;   /* Убираем ограничение в 960px, если было */
+                margin: 0;         /* Убираем отступы */
+                padding: 0;
             }
+            
+            #jsspeccy canvas {
+                width: 100% !important;  /* Растягиваем канвас на всю ширину контейнера */
+                height: auto !important; /* Высота автоматически сохраняет пропорции */
+                display: block;          /* Убираем лишние отступы снизу */
+            }
+
             #jsspeccy {
                 background-color: #FFF;
             }
