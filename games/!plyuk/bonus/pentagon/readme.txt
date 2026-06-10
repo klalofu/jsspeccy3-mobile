@@ -1,1 +1,0 @@
-Fixed For Pentagon Timings
