@@ -101,6 +101,13 @@ class Emulator extends EventEmitter {
                         this.emit('openedTapeFile');
                     }
                     break;
+                case 'memoryRead':
+                    // Вызываем resolve для промиса, который мы создали в readMemory()
+                    if (this.fileOpenPromiseResolutions[e.data.id]) {
+                        this.fileOpenPromiseResolutions[e.data.id](e.data.data);
+                        delete this.fileOpenPromiseResolutions[e.data.id];
+                    }
+                    break;
                 case 'playingTape':
                     this.tapeIsPlaying = true;
                     this.emit('playingTape');
@@ -367,6 +374,17 @@ class Emulator extends EventEmitter {
         this.pause();
         this.worker.terminate();
     }
+
+    readMemory() {
+        return new Promise((resolve) => {
+            const id = this.nextFileOpenID++;
+            this.fileOpenPromiseResolutions[id] = resolve;
+            this.worker.postMessage({
+                message: 'readMemory',
+                id: id
+            });
+        });
+    }
 }
 
 window.JSSpeccy = (container, opts) => {
@@ -596,7 +614,7 @@ window.JSSpeccy = (container, opts) => {
     // Пытаемся разблокировать сразу (на случай, если переход по ссылке засчитался как жест)
     unlockAudio();
     // ==========================================
-    
+
     const openFileDialog = () => {
         fileDialog().then(files => {
             const file = files[0];
@@ -717,5 +735,6 @@ window.JSSpeccy = (container, opts) => {
             emu.openUrl(url).catch((err) => {alert(err);});
         },
         exit: () => {exit();},
+        readMemory: () => emu.readMemory(),
     };
 };

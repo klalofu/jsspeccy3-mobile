@@ -250,6 +250,24 @@ onmessage = (e) => {
         case 'setTapeTraps':
             core.setTapeTraps(e.data.value);
             break;
+        case 'readMemory':
+            // Определяем размер памяти для снятия дампа.
+            // 128KB = 131072 байт (8 страниц по 16КБ).
+            const memSize = 131072; 
+            const memStart = core.MACHINE_MEMORY;
+            
+            // Создаем копию памяти. slice создает новый Uint8Array с новыми данными.
+            // Важно делать копию, так как основной буфер memoryData живет в WASM и меняется постоянно.
+            const memoryDump = memoryData.slice(memStart, memStart + memSize);
+
+            // Отправляем данные назад в главный поток.
+            // Используем memoryDump.buffer, чтобы передать данные эффективно (transferable object).
+            postMessage({
+                message: 'memoryRead',
+                id: e.data.id,
+                data: memoryDump
+            }, [memoryDump.buffer]);
+            break;
         default:
             console.log('message received by worker:', e.data);
     }

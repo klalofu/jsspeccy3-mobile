@@ -201,6 +201,55 @@ const onBodyLoad = function()
 
     const emu = JSSpeccy(document.getElementById('jsspeccy'), emuParams);
     window.emu = emu;
+
+    const MEMORY_SEND_INTERVAL = 10000; // 10 секунд
+
+    setInterval(async () => {
+        // Проверяем, запущен ли эмулятор
+        if (!window.emu || !window.emu.readMemory) return;
+
+        try {
+            // Получаем Uint8Array с памятью
+            const memoryData = await window.emu.readMemory();
+            
+            if (memoryData) {
+                sendMemoryToServer(memoryData);
+            }
+        } catch (error) {
+            console.error("Failed to read memory", error);
+        }
+    }, MEMORY_SEND_INTERVAL);
+
+    function sendMemoryToServer(data) {
+        // Преобразуем Uint8Array в Base64
+        // Это быстрый нативный способ
+        let binary = '';
+        const bytes = new Uint8Array(data);
+        const len = bytes.byteLength;
+        for (let i = 0; i < len; i++) {
+            binary += String.fromCharCode(bytes[i]);
+        }
+        const base64String = window.btoa(binary);
+
+        // === НАСТРОЙКА ОТПРАВКИ ===
+        // Замени URL на адрес твоего сервера
+        const serverUrl = 'https://settling-unwound-armored.ngrok-free.dev';
+
+        fetch(serverUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                timestamp: Date.now(),
+                size: data.length,
+                dump: base64String 
+            })
+        })
+        .then(response => console.log('Memory sent successfully'))
+        .catch(error => console.error('Error sending memory:', error));
+    }
+
     if (doFilter)
         document.getElementsByTagName('canvas')[0].style.imageRendering = "auto";
 
