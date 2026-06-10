@@ -7,6 +7,7 @@ let memoryData = null;
 let workerFrameData = null;
 let registerPairs = null;
 let tapePulses = null;
+let currentMachineType = 48;
 
 let stopped = false;
 let tape = null;
@@ -196,6 +197,7 @@ onmessage = (e) => {
             core.keyUp(e.data.row, e.data.mask);
             break;
         case 'setMachineType':
+            currentMachineType = e.data.type;
             core.setMachineType(e.data.type);
             break;
         case 'reset':
@@ -253,7 +255,7 @@ onmessage = (e) => {
         case 'readMemory':
             // Определяем размер памяти для снятия дампа.
             // 128KB = 131072 байт (8 страниц по 16КБ).
-            const memSize = 131072; 
+            const memSize = (currentMachineType == 48) ? 49152 : 131072;
             const memStart = core.MACHINE_MEMORY;
             
             // Создаем копию памяти. slice создает новый Uint8Array с новыми данными.
@@ -265,7 +267,8 @@ onmessage = (e) => {
             postMessage({
                 message: 'memoryRead',
                 id: e.data.id,
-                data: memoryDump
+                data: memoryDump,
+                machineType: currentMachineType
             }, [memoryDump.buffer]);
             break;
         default:
