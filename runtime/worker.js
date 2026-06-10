@@ -56,6 +56,7 @@ const loadSnapshot = (snapshot) => {
     }
 
     core.setTStates(snapshot.tstates);
+    console.log('tacts in snapshot: ', snapshot.tstates)
 };
 
 const trapTapeLoad = () => {
