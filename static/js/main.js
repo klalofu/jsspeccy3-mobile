@@ -68,14 +68,17 @@ function onBodyLoad() {
         return; // Выходим, чтобы не запускать эмулятор
     }
 
-    // --- РЕЖИМ ИГРЫ ---
     document.getElementById('menu-screen').style.display = 'none';
     document.getElementById('jsspeccy').style.display = 'block';
     document.getElementById('guiparent').style.display = 'block';
 
-    // === 3. НАСТРОЙКА ПАРАМЕТРОВ ЭМУЛЯТОРА ===
+    canvasZoomh = window.innerWidth / 320;
+    if (window.innerHeight/240 < canvasZoom) {
+        koeff = window.innerHeight / window.innerWidth;
+        canvasZoom = (window.innerWidth / 320) *koeff;
+    }
     const emuParams = {
-        zoom: (window.innerWidth / 320),
+        zoom: canvasZoom,
         sandbox: false,
         autoLoadTapes: true,
         autoStart: true,
