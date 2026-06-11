@@ -33,6 +33,12 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Build
+        run: npm run build
+        env:
+          CI: false
+          NODE_OPTIONS: --openssl-legacy-provider
+
       - name: Generate games list
         run: |
           python3 -c "
@@ -53,12 +59,12 @@ jobs:
           print('Generated games.json with', len(games), 'games')
           "
 
-      - name: Build
-        run: npm run build
-        env:
-          CI: false
-          NODE_OPTIONS: --openssl-legacy-provider
       
+      - name: Copy static assets
+        run: |
+          cp -r static/css dist/css
+          cp -r static/js dist/js
+
       - name: Copy games to dist
         run: |
           mkdir -p dist/games
