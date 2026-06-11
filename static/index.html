@@ -7,10 +7,9 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
         <title>ZX Spectrum</title>
         
-        <!-- Подключаем API Telegram -->
         <script src="https://telegram.org/js/telegram-web-app.js"></script>
         <script src="https://unpkg.com/vconsole@latest/dist/vconsole.min.js"></script>
-        <script src="jsspeccy/jsspeccy.js"></script>
+        <script src="runtime/jsspeccy.js"></script>
         <style>
             * {
                 margin: 0;
@@ -113,7 +112,7 @@
 "use strict";
 /*****************************************************************************/        
 const onBodyLoad = function()
-{
+{u
     // === ИНИЦИАЛИЗАЦИЯ TELEGRAM ===
     if (window.Telegram && window.Telegram.WebApp) {
         window.Telegram.WebApp.expand();
