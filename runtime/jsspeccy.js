@@ -35,6 +35,7 @@ class Emulator extends EventEmitter {
         this.tapeIsPlaying = false;
         this.tapeTrapsEnabled = ('tapeTrapsEnabled' in opts) ? opts.tapeTrapsEnabled : true;
 
+        this.turboMode = opts.turbo || false;
         this.msPerFrame = 20;
 
         this.isExecutingFrame = false;
@@ -94,8 +95,14 @@ class Emulator extends EventEmitter {
                         };
                         const machineKey = parseInt(this.machineType);
                         const loaderPath = TAPE_LOADERS_BY_MACHINE[machineKey]['default'];
-                        this.openUrl(new URL(loaderPath, scriptUrl));
+                        //this.openUrl(new URL(loaderPath, scriptUrl));
                         //this.openUrl(new URL(TAPE_LOADERS_BY_MACHINE[this.machineType][this.tapeAutoLoadMode], scriptUrl));
+                        this.openUrl(new URL(loaderPath, scriptUrl)).then(() => {
+                            // Восстанавливаем турбо-режим после загрузки снэпшота загрузчика
+                            if (this.turboMode) {
+                                this.setTurbo(true);
+                            }
+                        });
                         if (!this.tapeTrapsEnabled) {
                             this.playTape();
                         }

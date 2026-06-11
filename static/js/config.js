@@ -29,7 +29,8 @@ const gameConfigs = {
         keys: "12345,QWERTYUIOP,ASDFGHJKLe,cZXCVBNMs_"
     },
 
-    "Some 128k Game": {
-        machine: "128"
+    "TM": {
+        machine: "128",
+        turbo: true
     }
 };

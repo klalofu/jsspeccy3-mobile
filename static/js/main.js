@@ -88,7 +88,8 @@ function onBodyLoad() {
         sandbox: false,
         autoLoadTapes: true,
         autoStart: true,
-        machine: 48
+        machine: 48,
+        turbo: false
     };
 
     const defkeystr = '1234567890,QWERTYUIOP,ASDFGHJKLe,cZXCVBNMs_';
@@ -115,7 +116,7 @@ function onBodyLoad() {
                 const fileName = decodedUrl.split('/').pop().split('.')[0];
                 
                 if (gameConfigs[fileName] && gameConfigs[fileName].turbo) {
-                    needsTurbo = true;
+                    emuParams.turbo = true;
                     console.log(`Turbo enabled for ${fileName} via config`);
                 }
             } catch (e) { console.error(e); }
