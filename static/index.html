@@ -109,7 +109,7 @@
     <script src="canvasgui/PointerEventHandler.js"></script>
     <script src="canvasgui/canvasgui.js"></script>
     
-    <script>
+<script>
 "use strict";
 /*****************************************************************************/        
 const onBodyLoad = function()
@@ -123,6 +123,7 @@ const onBodyLoad = function()
         console.log("Window width:", window.innerWidth);
         if (platform === 'android' || platform === 'ios') {
             isMobile = true;
+       }
     }
 
     // === ПРОВЕРКА РЕЖИМА (МЕНЮ ИЛИ ИГРА) ===
@@ -389,6 +390,7 @@ const onBodyLoad = function()
     win._onload();
 }
 
+
 // _: [space]        space
 // e: [enter]        enter
 // c: [caps   shift] shift
@@ -411,7 +413,7 @@ const imgExceptions = {
     s: 'SYM',
     _: 'SPC',
 }
-
+u
 class MyImageButton extends ImageButton
 {
     constructor(parent, x, y, w, h, suffix, keyCode)
