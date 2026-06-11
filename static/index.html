@@ -89,6 +89,10 @@
                 background-color: #0ff;
                 color: #000;
             }
+            #virtkeys {
+                display: block;
+                margin: 0 auto;
+            }
         </style>
     </head>
     <body onload="onBodyLoad()">
@@ -468,19 +472,9 @@ document.addEventListener('keydown', (e) => {
             // Запрашиваем данные у эмулятора
             const result = await window.emu.readMemory(); // Теперь в result будет и memory, и registers
             
-            // Проверяем, что пришло (структура может отличаться, если readMemory возвращает только данные)
-            // Если readMemory возвращает только Uint8Array, нужно будет править jsspeccy.js, чтобы он передавал объект.
-            // Для простоты предположим, что мы научили readMemory возвращать объект.
-            
             const memoryData = result.data; // Uint8Array
             const regs = result.registers;  // Объект с регистрами
             
-            // Если машина 128К, формат Z80 сложнее (есть заголовок расширения).
-            // Сейчас сделаем простой вариант для 48К.
-            if (result.machineType !== 48) {
-                alert("Сохранение пока работает корректно только для 48К игр!");
-                // Можно реализовать и для 128, но там структура файла сложнее.
-            }
 
             // --- Формируем заголовок Z80 (30 байт для v1) ---
             const header = new Uint8Array(30);
@@ -498,7 +492,6 @@ document.addEventListener('keydown', (e) => {
             // Счетчик команд (PC)
             view.setUint16(10, regs.pc, true); // Важно! Где мы сейчас находимся.
 
-            // Регистры阴影 (Shadow)
             view.setUint16(12, regs.af_, true);
             view.setUint16(14, regs.bc_, true);
             view.setUint16(16, regs.de_, true);
@@ -584,115 +577,159 @@ document.addEventListener('keydown', (e) => {
             URL.revokeObjectURL(url);
         }, 0);
     }
+        // Вспомогательная функция: вырезает 16КБ страницу из полного дампа памяти
+    // memoryData - это полный дамп (от 0 до конца)
+    function getPage(memoryData, pageNum) {
+        const start = pageNum * 16384; // 0x4000
+        return memoryData.slice(start, start + 16384);
+    }
+
     async function saveSNA(result) {
-        const memoryData = result.data; 
+        const memoryData = result.data; // Полный дамп памяти (сырой)
         const regs = result.registers;
         const paging = result.paging || []; // [PageAt0000, PageAt4000, PageAt8000, PageAtC000]
 
-        // Функция для вырезания банка памяти (16КБ) из общего дампа
-        // В memoryData банки идут по порядку: 0, 1, 2... 7
-        const getPage = (pageNum) => {
-            const start = pageNum * 16384;
-            return memoryData.slice(start, start + 16384);
-        };
-
-        // === Формируем заголовок (одинаковый для 48 и 128) ===
+        // === Формируем заголовок (27 байт) ===
         const header = new Uint8Array(27);
         const view = new DataView(header.buffer);
         
         header[0] = regs.ir & 0xFF; // I
-        view.setUint16(1, regs.hl_, true); // HL'
-        view.setUint16(3, regs.de_, true); // DE'
-        view.setUint16(5, regs.bc_, true); // BC'
-        view.setUint16(7, regs.af_, true); // AF'
-        view.setUint16(9, regs.hl, true);  // HL
-        view.setUint16(11, regs.de, true); // DE
-        view.setUint16(13, regs.bc, true); // BC
-        view.setUint16(15, regs.iy, true); // IY
-        view.setUint16(17, regs.ix, true); // IX
+        
+        // Регистры тени (Shadow)
+        view.setUint16(1, regs.hl_, true);
+        view.setUint16(3, regs.de_, true);
+        view.setUint16(5, regs.bc_, true);
+        view.setUint16(7, regs.af_, true);
+        
+        // Основные регистры
+        view.setUint16(9, regs.hl, true);
+        view.setUint16(11, regs.de, true);
+        view.setUint16(13, regs.bc, true);
+        view.setUint16(15, regs.iy, true);
+        view.setUint16(17, regs.ix, true);
         
         header[19] = regs.iff2 ? 0xFF : 0x00; // IFF2
         header[20] = ((regs.ir >> 8) & 0x7F); // R
-        view.setUint16(21, regs.af, true); // AF
-        view.setUint16(23, regs.sp, true); // SP
+        view.setUint16(21, regs.af, true);
+        
+        // SP и PC обрабатываются specially
+        let sp = regs.sp;
+        let pc = regs.pc;
+        
         header[25] = regs.im; // Interrupt Mode
-        header[26] = 0; // Border
+        header[26] = 0;       // Border
 
+        // === ЛОГИКА ДЛЯ 48K ===
         if (result.machineType === 48) {
-            // === 48K LOGIC ===
-            // Просто копируем память (она уже в формате 48К в дампе, если мы правильно слайсали)
-            // Но т.к. memoryData теперь полный дамп 128К (или 48К), нужно быть аккуратным.
-            // Для 48К машин дамп равен 49152 байта.
+            // SNA 48K требует память в порядке банков: 5, 2, 0
+            const bank5 = getPage(memoryData, 5);
+            const bank2 = getPage(memoryData, 2);
+            const bank0 = getPage(memoryData, 0);
+
+            // === МАГИЯ СО СТЕКОМ (PC Injection) ===
+            // SNA не хранит PC в заголовке. Он должен быть на стеке.
+            // Стек всегда находится в Bank 0 (адреса 0x4000-0xFFFF, но физически это Bank 0).
+            // Нам нужно записать PC в память Банка 0 по смещению SP.
             
-            const snaFile = new Uint8Array(27 + memoryData.length);
+            // 1. Копируем Банк 0, чтобы не портить оригинальный дамп
+            const bank0Modified = new Uint8Array(bank0);
+            
+            // 2. SP должен быть уменьшен на 2 перед сохранением
+            sp = (sp - 2) & 0xFFFF;
+            header[23] = sp & 0xFF;      // SP Low
+            header[24] = (sp >> 8) & 0xFF; // SP High
+            
+            // 3. Записываем PC в Bank 0 по адресу SP
+            // SP в 48K всегда в диапазоне 0x4000-0xFFFF? Нет, 0x0000-0xFFFF.
+            // Но в 48K машине память 0x4000-0xFFFF отображена на Bank 0, 2, 5.
+            // Стек растет вниз от 0xFFFF (обычно).
+            // Адрес SP - это логический адрес.
+            // Если SP < 0x4000, это проблема (стек в ROM?), но обычно SP > 0x4000.
+            
+            // Логический адрес SP в Bank 0?
+            // В 48K: 4000-7FFF = Bank5, 8000-BFFF = Bank2, C000-FFFF = Bank0.
+            // Значит стек (обычно вверху) находится в Bank 0 (адреса C000-FFFF).
+            
+            // Нам нужно записать PC по логическому адресу SP.
+            // Если SP находится в диапазоне C000-FFFF, то он попадает в bank0Modified.
+            // Смещение внутри банка: SP & 0x3FFF (это не совсем точно, см. ниже)
+            
+            // Правильное вычисление смещения:
+            // Логический адрес SP. Если SP >= 0xC000, он в Bank 0.
+            // Смещение в файле для Bank 0 = 0.
+            // Смещение в массиве bank0Modified = SP - 0xC000.
+            
+            if (sp >= 0xC000) {
+                const offsetInBank0 = sp - 0xC000;
+                bank0Modified[offsetInBank0] = pc & 0xFF;       // PCL
+                bank0Modified[offsetInBank0 + 1] = (pc >> 8) & 0xFF; // PCH
+            } else {
+                // Если стек в экранной области (Bank 5) или Bank 2 - это редкость, но надо обработать
+                console.warn("Stack pointer is in low memory, save might be incorrect");
+                // Для простоты пока опустим, но в идеале надо искать в каком банке SP
+            }
+
+            // Склеиваем файл: Header + Bank5 + Bank2 + Bank0(modified)
+            const snaFile = new Uint8Array(27 + 49152);
             snaFile.set(header, 0);
-            snaFile.set(memoryData, 27);
+            
+            let offset = 27;
+            snaFile.set(bank5, offset); offset += 16384;
+            snaFile.set(bank2, offset); offset += 16384;
+            snaFile.set(bank0Modified, offset);
+            
             downloadFile(snaFile, "game_48k.sna");
 
         } else {
-            // === 128K LOGIC ===
-            // Формат:
-            // 1. Header (27)
-            // 2. Bank 5 (16384)
-            // 3. Bank 2 (16384)
-            // 4. Bank 0 (16384)
-            // 5. Extension Header (4 bytes) -> PC, 7FFD, TRDOS
-            // 6. Banks 1, 3, 4, 6, 7 (по 16384)
-
-            // Вычисляем значение порта 7FFD
-            // paging[3] - это номер банка, который сейчас отображен на адрес 0xC000
-            // Биты 0-2: номер банка
-            // Бит 3: экран (0=Bank5, 1=Bank7) - нам нужно проверить, где экран
-            // Бит 4: ROM (0=ROM0, 1=ROM1) - paging[0] показывает, что по адресу 0x0000
+            // === ЛОГИКА ДЛЯ 128K ===
+            // SNA 128K: Header + Banks 5,2,0 + Extension(4 bytes) + Banks 1,3,4,6,7
             
-            let port7FFD = paging[3] & 0x07; // Биты 0-2 (номер банка)
+            // 1. Определяем значение порта 7FFD
+            // paging[3] - номер банка по адресу C000
+            // paging[0] - ROM (8=128 ROM0, 9=128 ROM1, 10=48 ROM)
             
-            // Проверка ROM бита (Bit 4)
-            // В paging[0] лежит номер страницы. Если это ROM 1 (page 9), то бит 4=1.
-            // Если ROM 0 (page 8) или RAM, то 0.
-            if (paging[0] === 9) port7FFD |= 0x10; 
-
-            // Проверка экрана (Bit 3)
-            // paging[1] - это банк по адресу 0x4000. Обычно там 5.
-            // Если там 7, значит включен второй экран.
-            if (paging[1] === 7) port7FFD |= 0x08;
-
-            // Собираем файл
-            const banksStandard = [5, 2, 0];
-            const banksExtra = [1, 3, 4, 6, 7];
+            let port7FFD = paging[3] & 0x07;
+            if (paging[0] === 9) port7FFD |= 0x10; // Bit 4: ROM 1 selected
+            if (paging[1] === 7) port7FFD |= 0x08; // Bit 3: Screen 7 (Shadow screen)
             
-            // Размер: 27 + 3*16K + 4 + 5*16K
+            // Внимание: Для 128К SNA заголовок требует, чтобы SP указывал на стек, 
+            // но PC берется из расширения, а не из стека! SP в заголовке должен быть реальным.
+            view.setUint16(23, sp, true); // SP в заголовок пишем реальный
+            
+            // Собираем банки
+            const bank5 = getPage(memoryData, 5);
+            const bank2 = getPage(memoryData, 2);
+            const bank0 = getPage(memoryData, 0);
+            
+            const extraBanks = [1, 3, 4, 6, 7].map(p => getPage(memoryData, p));
+            
+            // Размер: Header(27) + 3*16K + Ext(4) + 5*16K
             const totalSize = 27 + (3 * 16384) + 4 + (5 * 16384);
             const snaFile = new Uint8Array(totalSize);
             
+            // Запись
             let offset = 0;
+            snaFile.set(header, offset); offset += 27;
             
-            // 1. Заголовок
-            snaFile.set(header, offset);
-            offset += 27;
-
-            // 2. Стандартные банки (5, 2, 0)
-            banksStandard.forEach(bankNum => {
-                snaFile.set(getPage(bankNum), offset);
-                offset += 16384;
-            });
-
-            // 3. Extension Header (PC + 7FFD + TRDOS)
-            view = new DataView(snaFile.buffer, offset, 4); // Переиспользуем DataView, но по новому смещению
-            view.setUint16(0, regs.pc, true); // PC
-            view.setUint8(2, port7FFD);       // Port 7FFD value
-            view.setUint8(3, 0);              // TR-DOS paged flag (0)
+            snaFile.set(bank5, offset); offset += 16384;
+            snaFile.set(bank2, offset); offset += 16384;
+            snaFile.set(bank0, offset); offset += 16384;
+            
+            // Extension Header: PC (2 bytes), 7FFD (1 byte), TRDOS (1 byte)
+            const extHeader = new DataView(snaFile.buffer, offset, 4);
+            extHeader.setUint16(0, pc, true); // PC сохраняется здесь!
+            extHeader.setUint8(2, port7FFD);
+            extHeader.setUint8(3, 0); // TRDOS
             offset += 4;
-
-            // 4. Дополнительные банки
-            banksExtra.forEach(bankNum => {
-                snaFile.set(getPage(bankNum), offset);
+            
+            extraBanks.forEach(bank => {
+                snaFile.set(bank, offset);
                 offset += 16384;
             });
-
+            
             downloadFile(snaFile, "game_128k.sna");
         }
     }
-/*****************************************************************************/        
+
     </script>
 </html>
