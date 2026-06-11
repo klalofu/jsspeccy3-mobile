@@ -98,9 +98,11 @@ class Emulator extends EventEmitter {
                         //this.openUrl(new URL(loaderPath, scriptUrl));
                         //this.openUrl(new URL(TAPE_LOADERS_BY_MACHINE[this.machineType][this.tapeAutoLoadMode], scriptUrl));
                         this.openUrl(new URL(loaderPath, scriptUrl)).then(() => {
-                            // Восстанавливаем турбо-режим после загрузки снэпшота загрузчика
+                            // Снэпшот загрузился и перезаписал состояние.
+                            // Только сейчас включаем турбо, если нужно.
                             if (this.turboMode) {
                                 this.setTurbo(true);
+                                console.log("Turbo mode activated after tape loader.");
                             }
                         });
                         if (!this.tapeTrapsEnabled) {
