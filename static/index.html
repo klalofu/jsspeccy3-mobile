@@ -9,7 +9,7 @@
         
         <!-- Подключаем API Telegram -->
         <script src="https://telegram.org/js/telegram-web-app.js"></script>
-        
+        <script src="https://unpkg.com/vconsole@latest/dist/vconsole.min.js"></script>
         <script src="jsspeccy/jsspeccy.js"></script>
         <style>
             * {
@@ -99,6 +99,7 @@
             <h1>ZX SPECTRUM</h1>
             <div class="game-list" id="game-list-container"></div>
         </div>
+        <script>new VConsole();</script>
 
         <!-- Оригинальные контейнеры эмулятора -->
         <div id="jsspeccy"></div>
@@ -117,6 +118,11 @@ const onBodyLoad = function()
     if (window.Telegram && window.Telegram.WebApp) {
         window.Telegram.WebApp.expand();
         window.Telegram.WebApp.setHeaderColor('#0000aa');
+        const platform = window.Telegram.WebApp.platform;
+        console.log("Platform:", platform);
+        console.log("Window width:", window.innerWidth);
+        if (platform === 'android' || platform === 'ios') {
+            isMobile = true;
     }
 
     // === ПРОВЕРКА РЕЖИМА (МЕНЮ ИЛИ ИГРА) ===
@@ -200,7 +206,7 @@ const onBodyLoad = function()
     document.getElementById('guiparent').style.display = 'block';
 
     const emuParams = {
-        zoom: 1.5,
+        zoom: 1.5d,
         sandbox: false,
         autoLoadTapes: true,
         autoStart: true,
@@ -449,6 +455,67 @@ document.addEventListener('keydown', (e) => {
         // alert(turboActive ? "TURBO ON" : "TURBO OFF"); 
     }
 });
+
+    async function saveSNA(result) {
+        const memoryData = result.data; // 49152 байта для 48К
+        const regs = result.registers;
+
+        if (result.machineType !== 48) {
+             alert("Save SNA only for 48K games");
+             return;
+        }
+
+        // Формат SNA (48K): 27 байт заголовок + 48КБ память
+        const headerSize = 27;
+        const snaFile = new Uint8Array(headerSize + memoryData.length);
+        
+        // Заполняем заголовок SNA
+        // Порядок в SNA специфический (I, HL', DE', BC', AF', HL, DE, BC, IY, IX, IFF, R, AF, SP, IM, Border)
+        const view = new DataView(snaFile.buffer);
+        
+        snaFile[0] = regs.ir & 0xFF; // I
+        view.setUint16(1, regs.hl_, true); // HL'
+        view.setUint16(3, regs.de_, true); // DE'
+        view.setUint16(5, regs.bc_, true); // BC'
+        view.setUint16(7, regs.af_, true); // AF'
+        view.setUint16(9, regs.hl, true);  // HL
+        view.setUint16(11, regs.de, true); // DE
+        view.setUint16(13, regs.bc, true); // BC
+        view.setUint16(15, regs.iy, true); // IY
+        view.setUint16(17, regs.ix, true); // IX
+        
+        snaFile[19] = regs.iff2 ? 0xFF : 0x00; // IFF2 (перевернутый бит)
+        
+        snaFile[20] = ((regs.ir >> 8) & 0x7F); // R
+        
+        view.setUint16(21, regs.af, true); // AF
+        view.setUint16(23, regs.sp, true); // SP
+        
+        snaFile[25] = regs.im; // Interrupt Mode
+        
+        // Border color (можно вытащить из порта, но ставим 0)
+        snaFile[26] = 0; 
+
+        // Копируем память
+        snaFile.set(memoryData, headerSize);
+
+        // Скачиваем файл
+        downloadFile(snaFile, "game_save.sna");
+    }
+
+    function downloadFile(data, filename) {
+        const blob = new Blob([data], {type: 'application/octet-stream'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => {
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }, 0);
+    }
 /*****************************************************************************/        
     </script>
 </html>
