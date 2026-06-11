@@ -427,6 +427,7 @@ window.JSSpeccy = (container, opts) => {
         tapeAutoLoadMode: opts.tapeAutoLoadMode || 'default',
         openUrl: opts.openUrl,
         tapeTrapsEnabled: ('tapeTrapsEnabled' in opts) ? opts.tapeTrapsEnabled : true,
+        turbo: opts.turbo || false,
     });
     const ui = new UIController(container, emu, {zoom: opts.zoom || 1, sandbox: opts.sandbox});
 
