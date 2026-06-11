@@ -54,6 +54,9 @@ class Emulator extends EventEmitter {
                             this.openUrlList(opts.openUrl).catch(err => {
                                 alert(err);
                             }).then(() => {
+                                // === ДОБАВЛЕНО: Вызов колбэка после загрузки ===
+                                if (opts.onLoad) opts.onLoad();
+                                
                                 if (opts.autoStart) this.start();
                             });
                         } else if (opts.autoStart) {

@@ -45,37 +45,25 @@ function onBodyLoad() {
                     btn.className = 'game-btn';
                     btn.innerText = game.name;
 
-                    // Формируем базовую ссылку
                     let link = window.location.origin + window.location.pathname + '?u=' + encodeURIComponent(baseUrl + game.file);
 
-                    // === НОВАЯ ЛОГИКА ОБРАБОТКИ КОНФИГОВ ===
-                    
-                    // 1. Определяем параметры по умолчанию или из автодетекта (из games.json)
                     let machineParam = '48'; 
                     if (game.machine === '128' || game.machine === '5') {
                         machineParam = game.machine;
                     }
 
-                    // 2. Проверяем, есть ли кастомный конфиг для этой игры
-                    // game.name приходит из Python скрипта как имя файла без расширения
                     const customConfig = gameConfigs[game.name];
 
                     if (customConfig) {
-                        // Если в конфиге задана машина, она имеет приоритет
                         if (customConfig.machine) {
                             machineParam = customConfig.machine;
                         }
-                        
-                        // Если задана раскладка клавиатуры, добавляем параметр 'k'
                         if (customConfig.keys) {
                             link += '&k=' + encodeURIComponent(customConfig.keys);
                         }
                     }
 
-                    // 3. Добавляем параметр машины
                     link += '&m=' + machineParam;
-
-                    // === КОНЕЦ ЛОГИКИ КОНФИГОВ ===
 
                     btn.href = link;
                     listContainer.appendChild(btn);
@@ -106,6 +94,7 @@ function onBodyLoad() {
     const defkeystr = '1234567890,QWERTYUIOP,ASDFGHJKLe,cZXCVBNMs_';
     let keystr = defkeystr;
     let doFilter = false;
+    let needsTurbo = false; // Флаг для турбо
 
     // Обработка параметров URL
     for (const [key, value] of url.searchParams) {
@@ -118,11 +107,34 @@ function onBodyLoad() {
         }
         else if (key == 'u') {
             emuParams.openUrl = value;
+            
+            // === НОВАЯ ЛОГИКА: Проверка конфига по имени файла ===
+            // Извлекаем имя файла из URL (без расширения)
+            try {
+                const decodedUrl = decodeURIComponent(value);
+                const fileName = decodedUrl.split('/').pop().split('.')[0];
+                
+                if (gameConfigs[fileName] && gameConfigs[fileName].turbo) {
+                    needsTurbo = true;
+                    console.log(`Turbo enabled for ${fileName} via config`);
+                }
+            } catch (e) { console.error(e); }
         }
         else if (key == 'f') {
             if (value && value != 0)
                 doFilter = true;
         }
+    }
+
+    // === ДОБАВЛЕНО: Колбэк для включения турбо после загрузки ===
+    if (needsTurbo) {
+        emuParams.onLoad = function() {
+            console.log("Game loaded, activating TURBO mode...");
+            // window.emu уже должен быть доступен, так как JSSpeccy возвращает объект
+            if (window.emu) {
+                window.emu.setTurbo(true);
+            }
+        };
     }
 
     // === 4. ЗАПУСК ЭМУЛЯТОРА ===

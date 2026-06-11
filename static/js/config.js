@@ -20,8 +20,9 @@ const imgExceptions = {
 
 const gameConfigs = {
     "REX": {
-        keys: "-W-c,ASD,123456789M&_", 
-        machine: "48" 
+        keys: "-W-c,ASD,e1234M&_", 
+        machine: "48",
+        turbo: true
     },
     
     "Jet Set Willy": {
