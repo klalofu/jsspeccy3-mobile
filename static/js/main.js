@@ -156,7 +156,7 @@ function onBodyLoad() {
     }
 
     // === 5. ПОСТРОЕНИЕ ВИРТУАЛЬНОЙ КЛАВИАТУРЫ ===
-    buildVirtualKeyboard(keystr, 960);
+    buildVirtualKeyboard(keystr, window.innerWidth);
 
     // === 6. ОБРАБОТКА ГОРЯЧИХ КЛАВИШ (TURBO) ===
     let turboActive = false;
