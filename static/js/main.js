@@ -30,11 +30,10 @@ function onBodyLoad() {
 
         const baseUrl = 'https://klalofu.github.io/jsspeccy3-mobile/games/';
 
-        // Загрузка списка игр
         fetch('games.json')
             .then(response => response.json())
             .then(games => {
-                listContainer.innerHTML = ''; // Очищаем сообщение о загрузке
+                listContainer.innerHTML = '';
                 
                 if (games.length === 0) {
                     listContainer.innerHTML = '<div style="color:white">No games found</div>';
@@ -46,16 +45,38 @@ function onBodyLoad() {
                     btn.className = 'game-btn';
                     btn.innerText = game.name;
 
-                    // Формируем ссылку
+                    // Формируем базовую ссылку
                     let link = window.location.origin + window.location.pathname + '?u=' + encodeURIComponent(baseUrl + game.file);
 
-                    // Логика определения модели (по умолчанию 48K)
+                    // === НОВАЯ ЛОГИКА ОБРАБОТКИ КОНФИГОВ ===
+                    
+                    // 1. Определяем параметры по умолчанию или из автодетекта (из games.json)
                     let machineParam = '48'; 
                     if (game.machine === '128' || game.machine === '5') {
                         machineParam = game.machine;
                     }
-                    
+
+                    // 2. Проверяем, есть ли кастомный конфиг для этой игры
+                    // game.name приходит из Python скрипта как имя файла без расширения
+                    const customConfig = gameConfigs[game.name];
+
+                    if (customConfig) {
+                        // Если в конфиге задана машина, она имеет приоритет
+                        if (customConfig.machine) {
+                            machineParam = customConfig.machine;
+                        }
+                        
+                        // Если задана раскладка клавиатуры, добавляем параметр 'k'
+                        if (customConfig.keys) {
+                            link += '&k=' + encodeURIComponent(customConfig.keys);
+                        }
+                    }
+
+                    // 3. Добавляем параметр машины
                     link += '&m=' + machineParam;
+
+                    // === КОНЕЦ ЛОГИКИ КОНФИГОВ ===
+
                     btn.href = link;
                     listContainer.appendChild(btn);
                 });
@@ -65,20 +86,17 @@ function onBodyLoad() {
                 listContainer.innerHTML = 'Error loading list';
             });
 
-        return; // Выходим, чтобы не запускать эмулятор
+        return;
     }
 
+    // --- РЕЖИМ ИГРЫ ---
     document.getElementById('menu-screen').style.display = 'none';
     document.getElementById('jsspeccy').style.display = 'block';
     document.getElementById('guiparent').style.display = 'block';
 
-    canvasZoom = window.innerWidth / 320;
-    if (window.innerHeight/240 < canvasZoom) {
-        koeff = window.innerHeight / window.innerWidth;
-        canvasZoom = (window.innerWidth / 320) *koeff;
-    }
+    // === 3. НАСТРОЙКА ПАРАМЕТРОВ ЭМУЛЯТОРА ===
     const emuParams = {
-        zoom: canvasZoom,
+        zoom: (window.innerWidth / 320),
         sandbox: false,
         autoLoadTapes: true,
         autoStart: true,
@@ -111,28 +129,10 @@ function onBodyLoad() {
     const emu = JSSpeccy(document.getElementById('jsspeccy'), emuParams);
     window.emu = emu;
 
-    // Определение типа машины для статистики/отправки
     let machineType = '48K';
     if (emuParams.machine === 128) {
         machineType = '128K';
     }
-
-    /* 
-    // Опционально: отправка памяти на сервер (расскомментировать при необходимости)
-    const MEMORY_SEND_INTERVAL = 10000; // 10 секунд
-
-    setInterval(async () => {
-        if (!window.emu || !window.emu.readMemory) return;
-        try {
-            const memoryData = await window.emu.readMemory();
-            if (memoryData) {
-                sendMemoryToServer(memoryData, machineType);
-            }
-        } catch (error) {
-            console.error("Failed to read memory", error);
-        }
-    }, MEMORY_SEND_INTERVAL);
-    */
 
     if (doFilter) {
         document.getElementsByTagName('canvas')[0].style.imageRendering = "auto";
