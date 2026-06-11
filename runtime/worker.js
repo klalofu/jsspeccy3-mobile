@@ -260,7 +260,8 @@ onmessage = (e) => {
         case 'readMemory':
             console.log(`DEBUG WORKER: Machine type is ${currentMachineType}, calculating size...`);
             
-            const memSize = (currentMachineType == 48) ? 49152 : 131072;
+            //const memSize = (currentMachineType == 48) ? 49152 : 131072;
+            const memSize = 131072;
             const memStart = core.MACHINE_MEMORY;
             
             const memoryDump = memoryData.slice(memStart, memStart + memSize);

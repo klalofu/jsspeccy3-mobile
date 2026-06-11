@@ -581,6 +581,8 @@ document.addEventListener('keydown', (e) => {
     // memoryData - это полный дамп (от 0 до конца)
     function getPage(memoryData, pageNum) {
         const start = pageNum * 16384; // 0x4000
+        // Проверка на всякий случай, чтобы не вылететь
+        if (start + 16384 > memoryData.length) return new Uint8Array(16384); 
         return memoryData.slice(start, start + 16384);
     }
 
