@@ -22,11 +22,15 @@ const gameConfigs = {
     "REX": {
         keys: "-W-c,ASD,e1234M&_", 
         machine: "48",
-        turbo: true
+        turbo: true,
+        filter: true
     },
     
-    "Jet Set Willy": {
-        keys: "12345,QWERTYUIOP,ASDFGHJKLe,cZXCVBNMs_"
+    "Renegade128": {
+        keys: "12345,QWERTYUIOP,ASDFGHJKLe,cZXCVBNMs_",
+        turbo: true,
+        filter: true
+
     },
 
     "TM": {

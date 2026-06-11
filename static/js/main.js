@@ -61,6 +61,10 @@ function onBodyLoad() {
                         if (customConfig.keys) {
                             link += '&k=' + encodeURIComponent(customConfig.keys);
                         }
+
+                        if (customConfig.filter) {
+                            link += '&f=1';
+                        }
                     }
 
                     link += '&m=' + machineParam;
