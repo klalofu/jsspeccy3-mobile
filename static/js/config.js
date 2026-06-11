@@ -17,3 +17,18 @@ const imgExceptions = {
     s: 'SYM',
     _: 'SPC',
 };
+
+const gameConfigs = {
+    "REX": {
+        keys: "-W-c,ASD,123456789M&_", 
+        machine: "48" 
+    },
+    
+    "Jet Set Willy": {
+        keys: "12345,QWERTYUIOP,ASDFGHJKLe,cZXCVBNMs_"
+    },
+
+    "Some 128k Game": {
+        machine: "128"
+    }
+};

@@ -72,7 +72,7 @@ function onBodyLoad() {
     document.getElementById('jsspeccy').style.display = 'block';
     document.getElementById('guiparent').style.display = 'block';
 
-    canvasZoomh = window.innerWidth / 320;
+    canvasZoom = window.innerWidth / 320;
     if (window.innerHeight/240 < canvasZoom) {
         koeff = window.innerHeight / window.innerWidth;
         canvasZoom = (window.innerWidth / 320) *koeff;
