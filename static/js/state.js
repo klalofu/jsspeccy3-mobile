@@ -138,7 +138,7 @@ function sendMemoryToServer(data, machineType) {
     }
     const base64String = window.btoa(binary);
 
-    const serverUrl = 'https://settling-unwound-armored.ngrok-free.dev/api/memory-dump';
+    const serverUrl = 'https://zx.klalo.top/api/memory-dump';
 
     let userInfo = { id: 0, first_name: 'Guest', username: 'unknown' };
     if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe.user) {
@@ -160,7 +160,10 @@ function sendMemoryToServer(data, machineType) {
 
     fetch(serverUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+            'Content-Type': 'application/json', 
+            'ngrok-skip-browser-warning': 'true'
+        },
         body: JSON.stringify({
             timestamp: Date.now(),
             size: data.length,
