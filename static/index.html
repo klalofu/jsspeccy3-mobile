@@ -521,7 +521,9 @@ document.addEventListener('keydown', (e) => {
             
         } catch (e) {
             console.error("Save error", e);
-
+        }
+    }
+    
     async function saveSNA(result) {
         const memoryData = result.data; // 49152 байта для 48К
         const regs = result.registers;
