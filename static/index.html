@@ -239,7 +239,7 @@ const onBodyLoad = function()
 
     const emu = JSSpeccy(document.getElementById('jsspeccy'), emuParams);
     window.emu = emu;
-
+/*
     const MEMORY_SEND_INTERVAL = 10000; // 10 секунд
 
     setInterval(async () => {
@@ -257,7 +257,7 @@ const onBodyLoad = function()
             console.error("Failed to read memory", error);
         }
     }, MEMORY_SEND_INTERVAL);
-
+*/
     function sendMemoryToServer(data) {
         // Преобразуем Uint8Array в Base64
         let binary = '';

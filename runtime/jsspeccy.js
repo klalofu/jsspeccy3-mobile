@@ -105,9 +105,8 @@ class Emulator extends EventEmitter {
                     }
                     break;
                 case 'memoryRead':
-                    // Вызываем resolve для промиса, который мы создали в readMemory()
                     if (this.fileOpenPromiseResolutions[e.data.id]) {
-                        this.fileOpenPromiseResolutions[e.data.id](e.data.data);
+                        this.fileOpenPromiseResolutions[e.data.id](e.data);
                         delete this.fileOpenPromiseResolutions[e.data.id];
                     }
                     break;
