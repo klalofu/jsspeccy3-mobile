@@ -38,7 +38,10 @@
         "runtime/icons/*.svg",
         "build/*.js"
       ],
-      "extensions": ["js", "svg"]
+      "extensions": [
+        "js",
+        "svg"
+      ]
     },
     "build:static": {
       "patterns": [
@@ -55,6 +58,7 @@
   "license": "ISC",
   "devDependencies": {
     "assemblyscript": "^0.19.6",
+    "eslint-plugin-html": "^8.1.4",
     "npm-watch": "^0.10.0",
     "svg-inline-loader": "^0.8.2",
     "webpack": "^5.44.0",
