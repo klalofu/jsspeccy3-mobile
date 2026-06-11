@@ -73,7 +73,10 @@ canvas#virtkeys {
     background-color: #0ff;
     color: #000;
 }
+
 #virtkeys {
     display: block;
     margin: 0 auto;
+    width: 100%; 
+    height: auto; 
 }

@@ -32,26 +32,47 @@ class MyImageButton extends ImageButton {
 /**
  * Строит виртуальную клавиатуру на основе строки конфигурации
  * @param {string} keystr - строка определения клавиш (например, "12345...")
- * @param {number} width - ширина канваса
+ * @param {number} width - ширина экрана
  */
 function buildVirtualKeyboard(keystr, width) {
     const btnrows = [];
     const keyrows = keystr.split(',');
     let height = 0;
 
+    // 1. Сначала проходим по всем строкам, чтобы найти МАКСИМАЛЬНУЮ длину
+    // Это нужно, чтобы размер кнопки (d) был одинаковым для всей клавиатуры
+    let maxRowLen = 0;
+    for (let j = 0; j < keyrows.length; j++) {
+        const len = keyrows[j].length;
+        if (len > maxRowLen) maxRowLen = len;
+    }
+
+    // Если строки пустые, ставим минимум 1, чтобы не делить на 0
+    if (maxRowLen === 0) maxRowLen = 1;
+
+    // 2. Рассчитываем размер кнопки по самой широкой строке
+    // Ограничиваем maxRowLen до 10, если вдруг пришло больше
+    const gridWidth = Math.min(maxRowLen, 10);
+    const d = width / gridWidth;
+
+    // 3. Строим кнопки, используя единый размер d
     for (let j = 0; j < keyrows.length; j++) {
         const keyrow = keyrows[j];
         const rowlen = keyrow.length;
         if (rowlen == 0) continue;
-        const currentRowLen = Math.min(rowlen, 10);
-        const d = width / currentRowLen;
-        const btnrow = { d: d, chs: [] };
+
+        // Центрируем строку, если она короче максимальной (опционально, но красиво)
+        const rowOffset = (width - (rowlen * d)) / 2;
         
-        for (let i = 0; i < currentRowLen; i++) {
+        const btnrow = { chs: [] };
+        
+        for (let i = 0; i < rowlen; i++) {
             let ch = keyrow.charAt(i);
             if (!(ch in keyCodes)) ch = '-';
             btnrow.chs.push(ch);
         }
+        // Сохраняем смещение для центрирования
+        btnrow.offset = rowOffset; 
         btnrows.push(btnrow);
         height += d;
     }
@@ -59,12 +80,12 @@ function buildVirtualKeyboard(keystr, width) {
     const win = new SingleWindow('virtkeys');
     win.setTargetSize(width, height);
 
-    let x = 0;
     let y = 0;
     for (let j = 0; j < btnrows.length; j++) {
         const btnrow = btnrows[j];
-        const d = btnrow.d;
-        x = 0;
+        // Используем сохраненное смещение
+        let x = btnrow.offset || 0; 
+        
         for (let i = 0; i < btnrow.chs.length; i++) {
             const ch = btnrow.chs[i];
             if (ch == '-') {
