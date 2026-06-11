@@ -592,8 +592,6 @@ window.JSSpeccy = (container, opts) => {
         window.location.href = window.location.pathname;
     });
     */
-       // === КОД КНОПКИ "МЕНЮ" (ИСПРАВЛЕННЫЙ) ===
-    // Создаем кнопку через обычный HTML элемент
     const menuBtn = document.createElement('div');
     menuBtn.innerHTML = '☰ Menu'; // Символ "гамбургер" и текст
     // Стили, чтобы кнопка висела поверх эмулятора в правом верхнем углу

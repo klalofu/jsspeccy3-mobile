@@ -20,7 +20,7 @@ const imgExceptions = {
 
 const gameConfigs = {
     "REX": {
-        keys: "-W-c,ASD,e1234M&_", 
+        keys: "-W-c,A-SD,e-----&_", 
         machine: "48",
         turbo: true,
         filter: true

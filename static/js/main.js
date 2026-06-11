@@ -81,7 +81,6 @@ function onBodyLoad() {
         return;
     }
 
-    // --- РЕЖИМ ИГРЫ ---
     document.getElementById('menu-screen').style.display = 'none';
     document.getElementById('jsspeccy').style.display = 'block';
     document.getElementById('guiparent').style.display = 'block';
@@ -113,8 +112,6 @@ function onBodyLoad() {
         else if (key == 'u') {
             emuParams.openUrl = value;
             
-            // === НОВАЯ ЛОГИКА: Проверка конфига по имени файла ===
-            // Извлекаем имя файла из URL (без расширения)
             try {
                 const decodedUrl = decodeURIComponent(value);
                 const fileName = decodedUrl.split('/').pop().split('.')[0];
@@ -131,7 +128,6 @@ function onBodyLoad() {
         }
     }
 
-    // === ДОБАВЛЕНО: Колбэк для включения турбо после загрузки ===
     if (needsTurbo) {
         emuParams.onLoad = function() {
             console.log("Game loaded, activating TURBO mode...");
@@ -165,6 +161,25 @@ function onBodyLoad() {
             turboActive = !turboActive;
             window.emu.setTurbo(turboActive);
             console.log("Turbo mode:", turboActive ? "ON" : "OFF");
+        }
+
+        if ((e.key === 'y' || e.key === 'Y' || e.code === 'KeyY') && e.isTrusted) {
+            console.log("Key Y pressed (physical). Sending memory dump...");
+            
+            if (window.emu && window.emu.readMemory) {
+                window.emu.readMemory().then(result => {
+                    if (result && result.data) {
+                        // Вызываем функцию из state.js
+                        sendMemoryToServer(result.data, machineType);
+                    } else {
+                        console.error("Failed to read memory: no data");
+                    }
+                }).catch(err => {
+                    console.error("Error reading memory:", err);
+                });
+            } else {
+                console.warn("Emulator not ready for memory dump");
+            }
         }
     });
 }
