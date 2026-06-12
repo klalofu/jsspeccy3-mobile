@@ -16,7 +16,8 @@ function downloadFile(data, filename) {
 
 function getPage(memoryData, pageNum) {
     const start = pageNum * 16384;
-    if (start + 16384 > memoryData.length) return new Uint8Array(16384); 
+    // Проверка на случай, если память меньше ожидаемой
+    if (!memoryData || start + 16384 > memoryData.length) return new Uint8Array(16384); 
     return memoryData.slice(start, start + 16384);
 }
 
@@ -47,16 +48,22 @@ async function saveSNA(result) {
     const header = new Uint8Array(27);
     const view = new DataView(header.buffer);
     
+    // Байт 0: I
     header[0] = (regs.ir >> 8) & 0xFF; 
+    
+    // Байты 1-8: Shadow Registers
     view.setUint16(1, regs.hl_, true);
     view.setUint16(3, regs.de_, true);
     view.setUint16(5, regs.bc_, true);
     view.setUint16(7, regs.af_, true);
+    
+    // Байты 9-18: Main Registers
     view.setUint16(9, regs.hl, true);
     view.setUint16(11, regs.de, true);
     view.setUint16(13, regs.bc, true);
     view.setUint16(15, regs.iy, true);
     view.setUint16(17, regs.ix, true);
+    
     header[19] = regs.iff2 ? 0xFF : 0x00;
     header[20] = regs.ir & 0xFF;
     view.setUint16(21, regs.af, true);
@@ -71,6 +78,7 @@ async function saveSNA(result) {
         sp = (sp - 2) & 0xFFFF;
         view.setUint16(23, sp, true);
         
+        // ИСПРАВЛЕНО: добавлен memoryData
         const bank5 = getPage(memoryData, 5);
         const bank2 = getPage(memoryData, 2);
         const bank0 = new Uint8Array(getPage(memoryData, 0)); 
@@ -100,16 +108,18 @@ async function saveSNA(result) {
         if (paging[0] === 9) port7FFD |= 0x10;
         if (paging[1] === 7) port7FFD |= 0x08;
 
+        // ИСПРАВЛЕНО: добавлен memoryData
         const bank5 = getPage(memoryData, 5);
         const bank2 = getPage(memoryData, 2);
         const bank0 = getPage(memoryData, 0);
-        const extraBanks = [1, 3, 4, 6, 7].map(p => getPage(p));
+        const extraBanks = [1, 3, 4, 6, 7].map(p => getPage(memoryData, p));
         
         const totalSize = 27 + (3 * 16384) + 4 + (5 * 16384);
         const snaFile = new Uint8Array(totalSize);
         
         let offset = 0;
         snaFile.set(header, offset); offset += 27;
+        
         snaFile.set(bank5, offset); offset += 16384;
         snaFile.set(bank2, offset); offset += 16384;
         snaFile.set(bank0, offset); offset += 16384;
@@ -138,7 +148,8 @@ function sendMemoryToServer(data, machineType) {
     }
     const base64String = window.btoa(binary);
 
-    const serverUrl = 'https://zx.klalo.top/api/memory-dump';
+    // Убедитесь, что адрес актуален (ваш домен или туннель)
+    const serverUrl = 'https://jzx.klalo.top/api/memory-dump'; 
 
     let userInfo = { id: 0, first_name: 'Guest', username: 'unknown' };
     if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe.user) {
@@ -161,8 +172,8 @@ function sendMemoryToServer(data, machineType) {
     fetch(serverUrl, {
         method: 'POST',
         headers: { 
-            'Content-Type': 'application/json', 
-            'ngrok-skip-browser-warning': 'true'
+            'Content-Type': 'application/json',
+            'ngrok-skip-browser-warning': 'true' // На всякий случай, если вернетесь к ngrok
         },
         body: JSON.stringify({
             timestamp: Date.now(),
