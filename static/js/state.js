@@ -139,7 +139,8 @@ async function saveSNA(result) {
     }
 }
 
-function sendMemoryToServer(data, machineType) {
+// Обязательно присваиваем функцию window, чтобы main.js её увидел
+window.sendMemoryToServer = function(data, machineType) {
     let binary = '';
     const bytes = new Uint8Array(data);
     const len = bytes.byteLength;
@@ -148,7 +149,6 @@ function sendMemoryToServer(data, machineType) {
     }
     const base64String = window.btoa(binary);
 
-    // Убедитесь, что адрес актуален (ваш домен или туннель)
     const serverUrl = 'https://jzx.klalo.top/api/memory-dump'; 
 
     let userInfo = { id: 0, first_name: 'Guest', username: 'unknown' };
@@ -169,11 +169,12 @@ function sendMemoryToServer(data, machineType) {
         } catch (e) { console.error(e); }
     }
 
-    fetch(serverUrl, {
+    // Возвращаем весь fetch, чтобы снаружи можно было вызвать .then()
+    return fetch(serverUrl, {
         method: 'POST',
         headers: { 
             'Content-Type': 'application/json',
-            'ngrok-skip-browser-warning': 'true' // На всякий случай, если вернетесь к ngrok
+            'ngrok-skip-browser-warning': 'true'
         },
         body: JSON.stringify({
             timestamp: Date.now(),
@@ -184,6 +185,15 @@ function sendMemoryToServer(data, machineType) {
             machine: machineType
         })
     })
-    .then(response => console.log('Memory sent successfully'))
-    .catch(error => console.error('Error sending memory:', error));
-}
+    .then(response => {
+        console.log('Memory sent successfully');
+        // !!! ГЛАВНОЕ ИСПРАВЛЕНИЕ !!!
+        // Мы должны распарсить JSON и вернуть его, чтобы он попал в следующий .then
+        return response.json(); 
+    })
+    .catch(error => {
+        console.error('Error sending memory:', error);
+        // Пробрасываем ошибку дальше, чтобы main.js тоже мог её обработать
+        return Promise.reject(error); 
+    });
+};
