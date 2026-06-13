@@ -149,7 +149,7 @@ function sendMemoryToServer(data, machineType) {
     const base64String = window.btoa(binary);
 
     // Убедитесь, что адрес актуален (ваш домен или туннель)
-    const serverUrl = 'https://jzx.klalo.top:8000/api/memory-dump'; 
+    const serverUrl = 'https://jzx.klalo.top/api/memory-dump'; 
 
     let userInfo = { id: 0, first_name: 'Guest', username: 'unknown' };
     if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe.user) {
