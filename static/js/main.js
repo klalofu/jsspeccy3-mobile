@@ -169,8 +169,14 @@ function onBodyLoad() {
             if (window.emu && window.emu.readMemory) {
                 window.emu.readMemory().then(result => {
                     if (result && result.data) {
-                        // Вызываем функцию из state.js
-                        sendMemoryToServer(result.data, machineType);
+                        // Вызываем функцию из state.js и добавляем обработчик ответа
+                        sendMemoryToServer(result.data, machineType)
+                            .then(response => {
+                                console.log("Server response received:", response);
+                            })
+                            .catch(error => {
+                                console.error("Error sending memory to server:", error);
+                            });
                     } else {
                         console.error("Failed to read memory: no data");
                     }
