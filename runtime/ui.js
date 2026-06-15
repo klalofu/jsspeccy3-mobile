@@ -309,6 +309,7 @@ export class UIController extends EventEmitter {
                 this.isFullscreen = true;
                 this.canvas.style.width = '100%';
                 this.canvas.style.height = '100%';
+                this.canvas.style.maxWidth = '1000';
                 document.addEventListener('mousemove', fullscreenMouseMove);
                 /* a bogus mousemove event is emitted on entering fullscreen, so ignore it */
                 this.ignoreNextMouseMove = true;
