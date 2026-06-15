@@ -418,6 +418,7 @@ window.JSSpeccy = (container, opts) => {
     canvas.style.width = '100%'; 
     canvas.style.height = 'auto';
     canvas.style.display = 'block';
+    canvas.style.maxWidth = '1000px';
     canvas.style.imageRendering = 'pixelated';
 
     const emu = new Emulator(canvas, {
